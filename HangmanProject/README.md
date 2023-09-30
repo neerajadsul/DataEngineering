@@ -2,8 +2,11 @@
 
 ## Description
 This directory contains a Python based program to play classic wordgame Hangman via a Terminal interface.
-## How to Install?
+## How to Install and Run?
+You will need Python 3 in your system path to be able to run and play this game.
 
+1. Clone the repository and change your working directory on Terminal to `HangmanProject`. Alternatively, you can download or copy-paste the script `milestone_5.py` on your computer and change working directory to the path on Terminal.
+2. Run the program by `python3 milestone_5.py`
 
 ## Gameplay / Usage
 Initially, the game will display a word to guess with all characters hidden and the word length.
