@@ -182,4 +182,37 @@ GROUP BY
 
 
 
+-- @block List the last names of actors, as well as how many actors have that last name.
+SELECT
+	COUNT(actor.last_name) as lastname_frequency,
+	actor.last_name AS lastname
+FROM
+	actor
+GROUP BY
+	lastname
+ORDER BY
+	lastname_frequency DESC;
+	
 
+-- @block How many customers are there per store? Return the number of customers and the store id.
+SELECT
+	COUNT(customer.customer_id) AS number_of_customers,
+	customer.store_id
+FROM
+	customer
+GROUP BY
+	customer.store_id;
+
+
+
+-- @block What was the largest order placed per customer? 
+-- Return the customer ids and the amounts
+SELECT
+	MAX(payment.amount) as max_amount_order,
+	payment.customer_id
+FROM
+	payment
+GROUP BY
+	customer_id
+ORDER BY
+	customer_id
