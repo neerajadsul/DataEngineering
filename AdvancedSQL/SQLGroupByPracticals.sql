@@ -95,3 +95,91 @@ HAVING
 	film.title = 'HUNCHBACK IMPOSSIBLE'
 
 
+-- @block Find the total income per store. 
+-- Return the income per store, the first line of the store's address 
+-- and the first and last name of the store manager.
+SELECT
+	store.store_id,
+	staff.first_name AS mgr_firstname,
+	staff.last_name AS mgr_lastname,
+	SUM(payment.amount),
+	address.address
+FROM
+	store
+INNER JOIN
+	inventory ON inventory.store_id = store.store_id
+INNER JOIN
+	rental ON rental.inventory_id = inventory.inventory_id
+INNER JOIN
+	payment ON payment.rental_id = inventory.inventory_id
+INNER JOIN
+	staff ON staff.staff_id = store.manager_staff_id
+INNER JOIN
+	address ON address.address_id = store.address_id
+GROUP BY
+	store.store_id, mgr_firstname, mgr_lastname, address.address;
+
+
+-- @block Return the names of the cities, along with the total amount spent, 
+-- where over $149 has been spent over the course of the resident's membership. 
+-- Order the results alphabetically on the city name
+SELECT
+	SUM(payment.amount) AS citywide_spending,
+	city.city
+FROM
+	payment
+INNER JOIN
+	customer ON customer.customer_id = payment.customer_id
+INNER JOIN
+	address ON address.address_id = customer.address_id
+INNER JOIN
+	city ON city.city_id = address.city_id
+GROUP BY
+	city.city
+HAVING
+	SUM(payment.amount) > 149
+ORDER BY
+	city.city;
+
+
+-- @block Return a table which counts the number transactions with
+-- a low, medium, or high value transaction. 
+-- A low payment is anything under $2, 
+-- a medium anything between $2 and $7, 
+-- and a high order anything above $6.
+
+SELECT
+	COUNT(payment.payment_id),
+	CASE
+		WHEN payment.amount < 2 THEN 'low'
+		WHEN payment.amount > 2 AND payment.amount <= 7 THEN 'med'
+		WHEN payment.amount > 6 THEN 'high'
+	END AS transaction_value
+FROM
+	payment
+GROUP BY
+	transaction_value;
+
+
+
+-- @block Return a table which counts the number of customers making 
+-- a low, medium, or high value transaction. 
+-- A low payment is anything under $2, 
+-- a medium anything between $2 and $7, 
+-- and a high order anything above $6.
+
+SELECT
+	COUNT(DISTINCT(payment.customer_id)),
+	CASE
+		WHEN payment.amount < 2 THEN 'low'
+		WHEN payment.amount > 2 AND payment.amount <= 7 THEN 'med'
+		WHEN payment.amount > 6 THEN 'high'
+	END AS transaction_value
+FROM
+	payment
+GROUP BY
+	transaction_value;
+
+
+
+
