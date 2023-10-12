@@ -216,3 +216,29 @@ GROUP BY
 	customer_id
 ORDER BY
 	customer_id
+
+
+
+
+-- @block When was the earliest order placed per customer? 
+-- Return the customer ids, the rental rates, and the names
+SELECT DISTINCT ON(customer.customer_id)
+	customer.customer_id,
+	CONCAT(customer.first_name, ' ', customer.last_name) as "Customer Name",
+	MIN(payment.payment_date) AS earliest_payment_date,
+	film.rental_rate
+FROM
+	customer
+INNER JOIN
+	payment ON payment.customer_id = customer.customer_id
+INNER JOIN
+	rental ON rental.rental_id = payment.rental_id
+INNER JOIN
+	inventory ON inventory.inventory_id = rental.inventory_id
+INNER JOIN
+	film ON film.film_id = inventory.film_id
+GROUP BY
+	customer.customer_id, film.rental_rate
+ORDER BY
+	customer.customer_id;
+
