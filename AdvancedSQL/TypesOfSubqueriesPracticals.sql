@@ -47,3 +47,26 @@ WHERE
 			)
 	)
 
+-- @block Return the titles of films with movies starting with A or I 
+-- and rated not anything but G
+
+SELECT
+	title,
+	rating
+FROM
+	film
+WHERE
+	(film.title LIKE 'A%'
+	OR
+	film.title LIKE 'I%')
+	AND
+	film.rating NOT IN
+	(
+		SELECT
+			rating
+		FROM
+			film
+		WHERE
+			rating != 'G'
+	)
+
