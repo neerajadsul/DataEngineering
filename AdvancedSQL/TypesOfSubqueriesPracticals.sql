@@ -80,3 +80,21 @@ FROM
 GROUP BY
 	rating
 
+
+-- @block Find the average number of sales per day for each staff
+SELECT
+	staff_id,
+	ROUND(SUM(daily_sell)/COUNT(daily_sell)) AS avg_sales_per_day_per_staff
+FROM
+	(
+		SELECT
+			COUNT(payment.rental_id) as daily_sell,
+			DATE_TRUNC('day', payment_date) AS day_of_payment,
+			staff_id
+		FROM
+			payment
+		GROUP BY
+			day_of_payment, staff_id
+	) AS daily_sales_by_staff
+GROUP BY
+	staff_id
