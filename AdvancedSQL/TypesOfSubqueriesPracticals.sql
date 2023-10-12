@@ -70,3 +70,13 @@ WHERE
 			rating != 'G'
 	)
 
+
+-- @block Return the average film length per rating
+SELECT
+	ROUND(AVG(length),1) as avg_duration,
+	rating
+FROM
+	film
+GROUP BY
+	rating
+
