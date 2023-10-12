@@ -17,3 +17,33 @@ WHERE
 		WHERE
 			category."name" = 'Animation'
 	);
+
+
+-- @block Return the first name, last name, and email of all customers in Canada
+SELECT
+	customer_id,
+	CONCAT(c.first_name, c.last_name),
+	c.email
+FROM
+	customer c
+INNER JOIN
+	address ON address.address_id = c.address_id
+WHERE
+	address.city_id IN
+	(
+		SELECT
+			city_id
+		FROM
+			city
+		WHERE
+			city.country_id IN
+			(
+				SELECT
+					country_id
+				FROM
+					country
+				WHERE 
+					country.country = 'Canada'
+			)
+	)
+
