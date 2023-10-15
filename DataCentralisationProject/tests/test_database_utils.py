@@ -1,4 +1,7 @@
+import sqlalchemy
+
 from database_utils import DatabaseConnector
+
 
 
 class TestDatabaseConnector:
@@ -12,3 +15,7 @@ class TestDatabaseConnector:
         for name in ('HOST', 'PASSWORD', 'USER', 'DATABASE', 'PORT'):
             assert any(key.endswith(name) for key in creds.keys())
 
+    def test_init_db_engine(self):
+        creds = self.dbc.read_db_creds()
+        engine = self.dbc.init_db_engine(creds)
+        assert engine is not None
