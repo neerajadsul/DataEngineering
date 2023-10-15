@@ -1,5 +1,6 @@
 """Connect and upload data to the specified databased."""
 from sqlalchemy import create_engine, Engine
+from sqlalchemy import text, inspect
 import yaml
 
 
@@ -27,6 +28,11 @@ class DatabaseConnector:
             f'{db_type}+{db_api}://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}'
         )
         return engine
+
+    def list_db_tables(self, engine):
+        inspector = inspect(engine)
+        table_names = inspector.get_table_names()
+        return table_names
 
 
 if __name__ == "__main__":
