@@ -2,10 +2,12 @@
 from sqlalchemy import create_engine, Engine
 from sqlalchemy import text, inspect
 import yaml
+from pandas import DataFrame
 
 
 class DatabaseConnector:
-    def read_db_creds(self, creds_file='db_creds.yaml'):
+    @staticmethod
+    def read_db_creds(creds_file='db_creds.yaml'):
         creds = None
         try:
             with open(creds_file) as f:
@@ -16,7 +18,8 @@ class DatabaseConnector:
             print(f"Found but could not access {creds_file}")
         return creds
 
-    def init_db_engine(self, creds) -> Engine:
+    @staticmethod
+    def init_db_engine(creds) -> Engine:
         db_type = 'postgresql'
         db_api = 'psycopg2'
         db_host = creds['RDS_HOST']
@@ -29,10 +32,16 @@ class DatabaseConnector:
         )
         return engine
 
-    def list_db_tables(self, engine):
+    @staticmethod
+    def list_db_tables(engine):
         inspector = inspect(engine)
         table_names = inspector.get_table_names()
         return table_names
+
+    @staticmethod
+    def upload_to_db(self, user_df: DataFrame, dest_table: str):
+        """Store Pandas DataFrame to database with given table name."""
+        pass
 
 
 if __name__ == "__main__":
