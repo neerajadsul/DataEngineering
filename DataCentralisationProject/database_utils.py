@@ -39,10 +39,12 @@ class DatabaseConnector:
         return table_names
 
     @staticmethod
-    def upload_to_db(self, user_df: DataFrame, dest_table: str):
+    def upload_to_db(user_df: DataFrame, dest_table: str):
         """Store Pandas DataFrame to database with given table name."""
-        pass
+        creds = DatabaseConnector.read_db_creds(creds_file='db_creds_central.yaml')
+        engine = DatabaseConnector.init_db_engine(creds)
+        user_df.to_sql(dest_table, engine, if_exists='replace')
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     pass
