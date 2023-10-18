@@ -1,6 +1,6 @@
 """Connect and upload data to the specified databased."""
 from sqlalchemy import create_engine, Engine
-from sqlalchemy import text, inspect
+from sqlalchemy import inspect
 import yaml
 from pandas import DataFrame
 
@@ -15,7 +15,7 @@ class DatabaseConnector:
         except FileNotFoundError:
             print(f'File not found, {creds_file}')
         except IOError:
-            print(f"Found but could not access {creds_file}")
+            print(f'Found but could not access {creds_file}')
         return creds
 
     @staticmethod
@@ -33,7 +33,7 @@ class DatabaseConnector:
         return engine
 
     @staticmethod
-    def list_db_tables(engine):
+    def list_db_tables(engine: Engine):
         inspector = inspect(engine)
         table_names = inspector.get_table_names()
         return table_names
