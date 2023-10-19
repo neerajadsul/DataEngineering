@@ -27,6 +27,9 @@ class DataCleaning:
         # Check for invalid email address: email_address
         users_df['email_address'] = self.email_validation(users_df['email_address'])
 
+        # Cleaning up phone numbers: phone_number
+        users_df['phone_number'] = self.phone_validation(users_df['phone_number'])
+
         # log some statistics for investigation when needed
         logger.debug('Number of NaNs: ', users_df.isna().sum())
         logger.debug('Number of Nulls: ', users_df.isnull().sum())
@@ -41,6 +44,21 @@ class DataCleaning:
         email_regex = "^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$"
         mask_invalid = ~emails.str.match(email_regex)
         emails.loc[mask_invalid] = str()
-        return email
+        return emails
 
+    def phone_validation(self, phones: Series) -> Series:
+        """
+        Replace invalid phone numbers with empty string, remove separators.
+        :param phones: Series
+        :return: cleaned-up Series
+        """
+        # Remove space, dash, period from phone numbers
+        for pattern in (r' ', r'\.', r'\-'):
+            phones = phones.str.replace(pattern, '', regex=True)
+
+        # Set invalid phone numbers to nan
+        phone_regex = r"^[+]?\d{0,4}(?:\(\d{1,5}\)){0,1}\d{5,12}"
+        mask_invalid = ~phones.str.match(phone_regex)
+        phones.loc[mask_invalid] = str()
+        return phones
 
