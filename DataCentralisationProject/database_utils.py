@@ -43,7 +43,7 @@ class DatabaseConnector:
         """Store Pandas DataFrame to database with given table name."""
         creds = DatabaseConnector.read_db_creds(creds_file='db_creds_central.yaml')
         engine = DatabaseConnector.init_db_engine(creds)
-        user_df.to_sql(dest_table, engine, if_exists='replace')
+        user_df.to_sql(dest_table, engine, if_exists='replace', index=False)
 
 
 if __name__ == '__main__':
