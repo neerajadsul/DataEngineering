@@ -3,7 +3,8 @@ from ..database_utils import DatabaseConnector
 
 
 class TestDatabaseConnector:
-
+    """Tests for database connector module."""
+    
     dbc = DatabaseConnector()
 
     def test_read_db_creds(self):
