@@ -40,8 +40,7 @@ class DataCleaning:
         :param emails: Series
         :return: cleaned-up Series
         """
-        # Ref: https://uibakery.io/regex-library/email-regex-python
-        email_regex = "^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$"
+        email_regex = r"^[^.][a-zA-Z0-9!#$%&'*+-/=?^_`{|}~]{3,64}[@][a-zA-Z0-9.-]{3,}$"
         mask_invalid = ~emails.str.match(email_regex)
         emails.loc[mask_invalid] = str()
         return emails
