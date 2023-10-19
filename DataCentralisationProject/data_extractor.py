@@ -18,10 +18,22 @@ class DataExtractor:
         return user_df
 
     @staticmethod
-    def retrieve_pdf_data():
-        """Read and extract text data from pdf file from AWS S3 bucket."""
-        data_file = r'https://data-handling-public.s3.eu-west-1.amazonaws.com/card_details.pdf'
-        pass
+    def retrieve_pdf_data(pdf_file: str) -> DataFrame:
+        """Read and extract text data as DataFrame from
+        a pdf file stored in AWS S3 bucket."""
+        try:
+            dfs = tabula.read_pdf(pdf_file)
+        except FileNotFoundError:
+            logger.error(f'File is not accessible at the link: {pdf_file}')
+        except ValueError:
+            logger.error(f'Invalid file format: {pdf_file}')
+        except Exception as e:
+            logger.error(e)
+        else:
+            cards_df = dfs[0]
+
+        return cards_df
+
 
 if __name__ == "__main__":
     pass
