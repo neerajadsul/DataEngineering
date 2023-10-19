@@ -40,7 +40,7 @@ class DataCleaning:
         :param emails: Series
         :return: cleaned-up Series
         """
-        email_regex = r"^[^.][a-zA-Z0-9!#$%&'*+-/=?^_`{|}~]{2,64}[@][a-zA-Z0-9.-]{3,}$"
+        email_regex = r"^[^.][a-zA-Z0-9!#$%&'*+-/=?^_`{|}~]{2,64}[^.]?[@][a-zA-Z0-9-]{3,32}(?:[.][a-zA-Z0-9-]{2,4})+"
         mask_invalid = ~emails.str.match(email_regex)
         emails.loc[mask_invalid] = str()
         return emails
