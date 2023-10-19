@@ -1,6 +1,6 @@
 """Clean data from each of the data sources."""
 import logging
-from pandas import DataFrame
+from pandas import DataFrame, Series
 import pandas as pd
 import numpy as np
 import datetime
@@ -9,8 +9,8 @@ logger = logging.getLogger('data_cleaning')
 
 
 class DataCleaning:
-    @staticmethod
-    def clean_user_data(users_df: DataFrame, dest_table: str):
+    """Data cleaning for dates, emails, empty values, phone numbers."""
+    def clean_user_data(self, users_df: DataFrame):
         """Clean the user data for NULL values, errors with dates,
         incorrectly typed values and rows filled with the wrong information."""
         # Check for duplicates
@@ -22,10 +22,19 @@ class DataCleaning:
         users_df.loc[users_df['date_of_birth'] > np.datetime64(datetime.datetime.now()), 'date_of_birth'] = np.NaN
         users_df.loc[users_df['join_date'] > np.datetime64(datetime.datetime.now()), 'join_date'] = np.NaN
         # Check for invalid email address: email_address
-
+        mask_invalid = self.email_validation(users_df['email_address'])
+        users_df.loc[mask_invalid, 'email_address'] = ""
         # Check for valid phone numbers: phone_number
         # Keep the international format
 
         # log some statistics for investigation when needed
         logger.debug('Number of NaNs: ', users_df.isna().sum())
         logger.debug('Number of Nulls: ', users_df.isnull().sum())
+
+    def email_validation(self, emails: Series) -> Series:
+        # Ref: https://uibakery.io/regex-library/email-regex-python
+        email_regex = r"^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@\
+        (?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$"
+
+        mask_invalid = ~emails.str.match(email_regex)
+        return mask_invalid
