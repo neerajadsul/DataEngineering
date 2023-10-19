@@ -1,16 +1,21 @@
 """Extract data from CSV files, a web API or S3 bucket."""
+import logging
+
 import pandas as pd
 from pandas import DataFrame
 import tabula
+from sqlalchemy import Engine
 
-from database_utils import DatabaseConnector
+logger = logging.getLogger("data_extractor")
 
 
 class DataExtractor:
     @staticmethod
-    def read_rds_table(engine, src_table: str) -> DataFrame:
+    def read_rds_table(engine: Engine, src_table: str) -> DataFrame:
         """Read database table into Pandas DataFrame."""
-        pass
+        # Use context manager to avoid dangling open connection
+        user_df = pd.read_sql_table(table_name=src_table, con=engine)
+        return user_df
 
     @staticmethod
     def retrieve_pdf_data():
