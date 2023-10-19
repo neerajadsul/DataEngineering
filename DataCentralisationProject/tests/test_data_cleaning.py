@@ -33,7 +33,9 @@ class TestDataCleaning():
             "@missingusername.com": False
         }
         emails = pd.Series(test_emails_validity.keys(), name='email_address')
-        expected_outcome = pd.Series(test_emails_validity.values(), name='email_address' )
+        expected_outcome = pd.Series([k if v else str() for k, v in test_emails_validity.items()], name='email_address')
         actual_outcome = self.data_cleaner.email_validation(emails)
-        assert actual_outcome.equals(~expected_outcome)
+        logger.debug(actual_outcome)
+        logger.debug(expected_outcome)
+        assert actual_outcome.equals(expected_outcome)
 
