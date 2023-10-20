@@ -18,11 +18,11 @@ class DataExtractor:
         return user_df
 
     @staticmethod
-    def retrieve_pdf_data(pdf_file: str) -> DataFrame:
+    def retrieve_pdf_data(pdf_file: str, pages='all') -> DataFrame:
         """Read and extract text data as DataFrame from
         a pdf file stored in AWS S3 bucket."""
         try:
-            dfs = tabula.read_pdf(pdf_file)
+            dfs = tabula.read_pdf(pdf_file, pages=pages)
         except FileNotFoundError:
             logger.error(f'File is not accessible at the link: {pdf_file}')
         except ValueError:
