@@ -14,10 +14,11 @@ def process_users_data():
     assert len(users_table) == 1
     users_table = users_table[0]
     # - Read users raw data from AWS RDS database
-    user_df = DataExtractor.read_rds_table(engine, users_table)
+    users_df = DataExtractor.read_rds_table(engine, users_table)
     # Customer's Data Cleaning
+    data_cleaner = DataCleaning()
     # - Clean raw users data before uploading to central database
-    clean_user_df = DataCleaning.clean_user_data(user_df, "dim_users")
+    clean_user_df = data_cleaner.clean_user_data(users_df=users_df)
     # - Upload cleaned data to central database
     DatabaseConnector.upload_to_db(clean_user_df, 'dim_users')
 
