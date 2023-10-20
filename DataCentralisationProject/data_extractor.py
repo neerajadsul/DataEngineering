@@ -30,9 +30,7 @@ class DataExtractor:
         except Exception as e:
             logger.error(e)
         else:
-            cards_df = dfs[0]
-
-        return cards_df
+            return dfs[0]
 
 
 if __name__ == "__main__":
