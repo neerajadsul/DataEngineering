@@ -10,7 +10,7 @@ logger = logging.getLogger('data_cleaning')
 
 class DataCleaning:
     """Data cleaning for dates, emails, empty values, phone numbers."""
-    def clean_user_data(self, users_df: DataFrame):
+    def clean_user_data(self, users_df: DataFrame) -> DataFrame:
         """Clean the user data for NULL values, errors with dates,
         incorrectly typed values and rows filled with the wrong information."""
         # Check for duplicates
@@ -33,6 +33,8 @@ class DataCleaning:
         # log some statistics for investigation when needed
         logger.debug('Number of NaNs: ', users_df.isna().sum())
         logger.debug('Number of Nulls: ', users_df.isnull().sum())
+
+        return users_df
 
     def email_validation(self, emails: Series) -> Series:
         """
