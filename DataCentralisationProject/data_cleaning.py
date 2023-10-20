@@ -56,7 +56,15 @@ class DataCleaning:
             phones = phones.str.replace(pattern, '', regex=True)
 
         # Set invalid phone numbers to nan
-        phone_regex = r"^[+]?\d{0,4}(?:\(\d{1,5}\)){0,1}\d{5,12}"
+        # Regex:
+        # - can start with + or upto 4 digits or (country/area code) format
+        # - followed by 5 to 12 digits
+        # - optionally an extension indicated by an inline literal x, 1 to 6 digits
+
+        # 0.24% rejection rate, allows +10#### type numbers.
+        # phone_regex = r"^[+|(]?[0-9]{0,4}(?:\(\d{1,5}\)){0,1}[0-9]{5,12}(?:x\d{1,6})?$"
+        # 0.34% rejection rate, safer and cleaner
+        phone_regex = r"^(?:\(\+?\d{1,7}\))?(?:\+[1-9][^0])?(?:\(0\))?(?:0{1,2})?(?:\d{5,14})?[x]?(?:\d{1,5})$"
         mask_invalid = ~phones.str.match(phone_regex)
         phones.loc[mask_invalid] = str()
         return phones
