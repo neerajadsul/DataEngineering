@@ -1,5 +1,7 @@
 """Extract data from CSV files, a web API or S3 bucket."""
 import logging
+import requests
+import json
 
 import pandas as pd
 from pandas import DataFrame
@@ -32,6 +34,20 @@ class DataExtractor:
         else:
             return dfs[0]
 
+    @staticmethod
+    def list_number_of_stores(header_details, endpoint):
+        """Retrieve number of stores from given API endpoint."""
+        data = requests.get(
+            endpoint, headers=header_details
+        )
+        if data.status_code != 200:
+            raise Exception(f"Request failed: HTTP code {data.status_code}")
+        else:
+            data = data.content.decode()
+            data = json.loads(data)
+            return data['number_stores']
+
+    @staticmethod
 
 if __name__ == "__main__":
     pass
