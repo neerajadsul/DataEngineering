@@ -34,9 +34,21 @@ def process_user_card_data():
     DatabaseConnector.upload_to_db(clean_card_df, 'dim_card_details')
 
 
+def process_store_data():
+    header_details = {'x-api-key': 'yFBQbwXe9J3sd6zWVAMrK6lcxxr0q1lr2PT6DDMX'}
+    endpoint = r'https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/number_stores'
+    number_of_stores = DataExtractor.list_number_of_stores(header_details, endpoint)
+
+    endpoint = r'https://aqj7u5id95.execute-api.eu-west-1.amazonaws.com/prod/store_details'
+    stores_data = DataExtractor.retrieve_stores_data(
+        number_of_stores, header_details, endpoint
+        )
+    return stores_data
+    # print(number_of_stores, stores_data)
 
 
 if __name__ == "__main__":
     # process_users_data()
     # process_user_card_data()
-    process_users_data()
+    process_store_data()
+
