@@ -24,8 +24,19 @@ def process_users_data():
 
 
 def process_user_card_data():
-    pass
+    pdf_file = (
+        r"https://data-handling-public.s3.eu-west-1.amazonaws.com/card_details.pdf"
+    )
+    card_df = DataExtractor.retrieve_pdf_data(pdf_file)
+    data_cleaner = DataCleaning()
+    clean_card_df = data_cleaner.clean_card_data(card_df)
+    # Upload cards data to central database
+    DatabaseConnector.upload_to_db(clean_card_df, 'dim_card_details')
+
+
 
 
 if __name__ == "__main__":
+    # process_users_data()
+    # process_user_card_data()
     process_users_data()
