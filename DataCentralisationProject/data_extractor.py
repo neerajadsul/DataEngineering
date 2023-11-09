@@ -48,6 +48,27 @@ class DataExtractor:
             return data['number_stores']
 
     @staticmethod
+    def retrieve_stores_data(n_stores, header_details, endpoint) -> DataFrame:
+        stores_data = []
+        errors = ['Data retrieval failed for stores: ']
+        for store_number in range(int(n_stores)):
+            # Create a store specific url endpoint
+            store_endpoint = f'{endpoint}/{store_number}'
+            # Retrieve data for a store number 
+            data = requests.get(store_endpoint, headers=header_details)
+            if data.status_code != 200:
+                errors.append(store_number)
+                continue
+            data = data.content.decode()
+            data = json.loads(data)
+            stores_data.append(data)
+            if store_number > 3:
+                break
+
+        stores_df = pd.json_normalize(stores_data)
+
+        return stores_df
+
 
 if __name__ == "__main__":
     pass
