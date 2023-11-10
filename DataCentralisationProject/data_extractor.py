@@ -46,18 +46,21 @@ class DataExtractor:
             return data['number_stores']
 
     @staticmethod
-    def retrieve_stores_data(total_n_stores, header_details, endpoint, stop_n=3) -> DataFrame:
+    def retrieve_stores_data(total_n_stores, header_details, endpoint, stop_n=None) -> DataFrame:
         """Retrieves data for all stores with given endpoint, supports loading subset of stores.
 
         :param total_n_stores: total number of stores
         :param header_details: API token key
         :param endpoint: endpoint url
-        :param stop_n: only load these many stores, defaults to 3
+        :param stop_n: only load these many stores, defaults to all stores
         :return: stores DataFrame
         """
+        if stop_n is None:
+            stop_n = total_n_stores
+
         stores_data = []
         errors = ['Data retrieval failed for stores: ']
-        for store_number in range(int(total_n_stores)):
+        for store_number in range(int(stop_n)):
             # Create a store specific url endpoint
             store_endpoint = f'{endpoint}/{store_number}'
             # Retrieve data for a store number
@@ -68,8 +71,6 @@ class DataExtractor:
             data = data.content.decode()
             data = json.loads(data)
             stores_data.append(data)
-            if store_number > stop_n:
-                break
 
         stores_df = pd.json_normalize(stores_data)
 
