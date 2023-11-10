@@ -72,6 +72,11 @@ class DataCleaning:
         return phones
 
     def clean_card_data(self, card_df: DataFrame) -> DataFrame:
+        """_summary_
+
+        :param card_df: raw data frame for card transactions
+        :return: cleaned card transaction data frame.
+        """
         # Validate payment card number or set NaN: card_number
         # Ref: https://en.wikipedia.org/wiki/Payment_card_number
         # Card number can vary from 12 digits to 19 digits
@@ -92,3 +97,25 @@ class DataCleaning:
         card_df['date_payment_confirmed'][invalid_payment_dates] = np.NaN
 
         return card_df.dropna()
+
+    def clean_store_data(self, stores_df: DataFrame) -> DataFrame:
+        """Sanitize retail stores data.
+
+        :param store_df: raw retail store data
+        :return: cleaned data
+        """
+        MIN_ADDRESS_LENGTH = 10
+        # Remove row without a valid address 
+        invalid_addresses = stores_df[stores_df['address'].str.len() < MIN_ADDRESS_LENGTH].index
+        print(invalid_addresses)
+        stores_df.drop(invalid_addresses, inplace=True)
+        stores_df['longitude'] = stores_df['latitude'].fillna(np.NaN)
+        stores_df['longitude'] = stores_df['longitude'].fillna(np.NaN)
+        stores_df['locality'] = stores_df['locality'].fillna("")
+        stores_df['store_code'].fillna('')
+        invalid_staff_numbers = stores_df[stores_df['staff_numbers'].apply(lambda x: not x.isnumeric())].index
+        stores_df.drop(invalid_staff_numbers, inplace=True)
+        stores_df['opening_date'] = pd.to_datetime(stores_df['opening_date'], format='mixed')
+        stores_df['store_type'] = stores_df['store_type'].fillna('')
+        stores_df['country_code'] = stores_df['country_code'].fillna('')
+        stores_df['continent'] = stores_df['continent'].fillna('')
