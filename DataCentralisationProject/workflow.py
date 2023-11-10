@@ -9,7 +9,7 @@ def process_users_data():
     # Customer's data retrieval
     creds = DatabaseConnector.read_db_creds("db_creds_aws_rds.yaml")
     engine = DatabaseConnector.init_db_engine(creds)
-    table_names: list = DatabaseConnector.list_db_tables(engine)
+    table_names = DatabaseConnector.list_db_tables(engine)
     users_table = [name for name in table_names if "users" in name]
     assert len(users_table) == 1
     users_table = users_table[0]
@@ -46,10 +46,18 @@ def process_store_data():
     data_cleaner = DataCleaning()
     clean_stores_df = data_cleaner.clean_store_data(stores_df)
     DatabaseConnector.upload_to_db(clean_stores_df, 'dim_stores_data')
-    # print(number_of_stores, stores_data)
+
+
+def process_product_details():
+    resource_uri = r's3://data-handling-public/products.csv'
+    products_df = DataExtractor.extract_from_s3(resource_uri)
+    data_cleaner = DataCleaning()
+    clean_products_df = data_cleaner.clean_products_data(products_df)
+    DatabaseConnector.upload_to_db(clean_products_df, 'dim_products')
 
 
 if __name__ == "__main__":
-    process_users_data()
-    process_user_card_data()
-    process_store_data()
+    # process_users_data()
+    # process_user_card_data()
+    # process_store_data()
+    process_product_details()
