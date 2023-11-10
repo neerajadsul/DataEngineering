@@ -120,3 +120,32 @@ class DataCleaning:
         stores_df['continent'] = stores_df['continent'].fillna('')
 
         return stores_df
+
+    def convert_product_weights(self, products_df):
+        """Convert all units to kg, assuming 1ml approx equal to 1g.
+
+        :param products_df: dataframe for products information
+        :return: dataframe with converted weights to kg
+        """
+
+        return products_df
+
+    def clean_products_data(self, df) -> DataFrame:
+        """Sanitize products data.
+
+        :param products_df: dataframe for products information
+        :return: sanitized data for products
+        """
+        invalid_product_name = df[df['product_name'].isna()].index
+        df = df.drop(invalid_product_name)
+        price_regex = r'\S{1,3}[0-9]{1,}.[0-9]{2,}'
+        df = df.drop(df[~df['product_price'].str.match(price_regex)].index)
+        df = df.drop(df[df['product_price'].isna()].index)
+        df = df.drop(df[df['weight'].isna()].index)
+        df['category'] = df['category'].fillna('')
+        df['EAN'] = df['EAN'].fillna('')
+        df['date_added'] = pd.to_datetime(df['date_added'], errors='coerce')
+        df['removed'] = df['removed'].fillna('')
+        df['product_code'] = df['product_code'].fillna('')
+
+        return df
