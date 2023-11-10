@@ -7,6 +7,7 @@ import pandas as pd
 from pandas import DataFrame
 import tabula
 from sqlalchemy import Engine
+import boto3
 
 logger = logging.getLogger('data_extractor')
 
@@ -75,6 +76,17 @@ class DataExtractor:
         stores_df = pd.json_normalize(stores_data)
 
         return stores_df
+
+    @staticmethod
+    def extract_from_s3(resource_uri) -> DataFrame:
+        bucket = 'data-handling-public'
+        file_name = 'products.csv'
+        s3 = boto3.client('s3')
+
+        file_object = s3.get_object(Bucket=bucket, Key=file_name)
+        df = pd.read_csv(file_object['Body'])
+
+        return df
 
 
 if __name__ == '__main__':
