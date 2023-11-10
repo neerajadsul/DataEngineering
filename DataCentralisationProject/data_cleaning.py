@@ -107,7 +107,6 @@ class DataCleaning:
         MIN_ADDRESS_LENGTH = 10
         # Remove row without a valid address 
         invalid_addresses = stores_df[stores_df['address'].str.len() < MIN_ADDRESS_LENGTH].index
-        print(invalid_addresses)
         stores_df.drop(invalid_addresses, inplace=True)
         stores_df['longitude'] = stores_df['latitude'].fillna(np.NaN)
         stores_df['longitude'] = stores_df['longitude'].fillna(np.NaN)
@@ -119,3 +118,5 @@ class DataCleaning:
         stores_df['store_type'] = stores_df['store_type'].fillna('')
         stores_df['country_code'] = stores_df['country_code'].fillna('')
         stores_df['continent'] = stores_df['continent'].fillna('')
+
+        return stores_df
