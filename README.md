@@ -4,7 +4,10 @@ Projects and coding completed for Data Engineering program at AiCore.
 1. [Hangman Game Project](./HangmanProject/)
 Python based program to play classic wordgame Hangman via a Terminal interface.
 
-
+2. [Retail Data Centralisation Project](./DataCentralisationProject/)
+Sales data spread across several sources makes it difficult to analyse and make sense of.
+Goal of this work is to consolidate data to a centralised location preparing a single source of truth
+for business insights, experiments and formulating evidence based strategy.
 
 ### Practicals
 1. [Advanced SQL](./AdvancedSQL/)

@@ -164,3 +164,8 @@ cython_debug/
 .DS_Store
 [tT]humbs.db
 
+
+# Database Credentials file
+*db_creds*.yaml
+
+
