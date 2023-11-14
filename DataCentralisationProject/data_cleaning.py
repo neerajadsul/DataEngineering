@@ -159,3 +159,25 @@ class DataCleaning:
         columns_to_drop = ['1', 'first_name', 'last_name']
         df = df.drop(columns=columns_to_drop)
         return df
+
+    def clean_sales_data(self, df) -> DataFrame:
+        """Santize sales data which has following columns
+            timestamp, month, year, day, time_period,
+
+        :param df: sales data DataFrame
+        :return: clean DataFrame
+        """
+        invalid_month = df[(~df['month'].str.isnumeric())].index
+        df = df.drop(invalid_month)
+        invalid_year = df[~df['year'].str.isnumeric()].index
+        df = df.drop(invalid_year)
+        invalid_day = df[~df['day'].str.isnumeric()].index
+        df = df.drop(invalid_day)
+        timestamp_regex = r'[0-9]{2}:[0-9]{2}:[0-9]{2}'
+        invalid_timestamp = df[~df['timestamp'].str.match(timestamp_regex)].index
+        df = df.drop(invalid_timestamp)
+        uuid_regex = r'[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}'
+        invalid_date_uuid = df[~df['date_uuid'].str.match(uuid_regex)].index
+        df = df.drop(invalid_date_uuid)
+
+        return df
