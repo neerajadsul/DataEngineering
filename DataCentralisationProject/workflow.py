@@ -56,6 +56,23 @@ def process_product_details():
     DatabaseConnector.upload_to_db(clean_products_df, 'dim_products')
 
 
+def process_orders_data():
+    # Orders's data retrieval
+    creds = DatabaseConnector.read_db_creds("db_creds_aws_rds.yaml")
+    engine = DatabaseConnector.init_db_engine(creds)
+    table_names = DatabaseConnector.list_db_tables(engine)
+    table = [name for name in table_names if "orders" in name]
+    assert len(table) == 1
+    # - Read users raw data from AWS RDS database
+    df = DataExtractor.read_rds_table(engine, table[0])
+    # Orders's Data Cleaning
+    # - Clean raw orders data before uploading to central database
+    data_cleaner = DataCleaning()
+    clean_df = data_cleaner.clean_user_data(users_df=df)
+    # - Upload cleaned data to central database
+    DatabaseConnector.upload_to_db(clean_df, 'dim_orders')
+
+
 if __name__ == "__main__":
     # process_users_data()
     # process_user_card_data()
