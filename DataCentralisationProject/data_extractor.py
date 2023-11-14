@@ -2,6 +2,7 @@
 import logging
 import requests
 import json
+from io import StringIO
 
 import pandas as pd
 from pandas import DataFrame
@@ -85,6 +86,16 @@ class DataExtractor:
 
         file_object = s3.get_object(Bucket=bucket, Key=file_name)
         df = pd.read_csv(file_object['Body'])
+
+        return df
+
+    @staticmethod
+    def extract_from_uri(resource_uri) -> DataFrame:
+        data = requests.get(resource_uri)
+        if data.status_code != 200:
+            raise Exception(f'Request failed to get data from {resource_uri}, status code {data.status_code}')
+        with StringIO(data.content.decode()) as s:
+            df = pd.read_json(s)
 
         return df
 
