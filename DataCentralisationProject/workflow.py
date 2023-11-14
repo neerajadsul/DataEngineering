@@ -68,7 +68,7 @@ def process_orders_data():
     # Orders's Data Cleaning
     # - Clean raw orders data before uploading to central database
     data_cleaner = DataCleaning()
-    clean_df = data_cleaner.clean_user_data(users_df=df)
+    clean_df = data_cleaner.clean_orders_data(df)
     # - Upload cleaned data to central database
     DatabaseConnector.upload_to_db(clean_df, 'dim_orders')
 
@@ -77,4 +77,5 @@ if __name__ == "__main__":
     # process_users_data()
     # process_user_card_data()
     # process_store_data()
-    process_product_details()
+    # process_product_details()
+    process_orders_data()

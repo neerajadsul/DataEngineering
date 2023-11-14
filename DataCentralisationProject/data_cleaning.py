@@ -149,3 +149,13 @@ class DataCleaning:
         df['product_code'] = df['product_code'].fillna('')
 
         return df
+
+    def clean_orders_data(self, df) -> DataFrame:
+        """Sanitize orders data.
+
+        :param df: DataFrame for orders
+        :return: cleaned DataFrame
+        """
+        columns_to_drop = ['1', 'first_name', 'last_name']
+        df = df.drop(columns=columns_to_drop)
+        return df
