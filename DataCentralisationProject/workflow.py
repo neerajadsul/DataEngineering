@@ -73,9 +73,18 @@ def process_orders_data():
     DatabaseConnector.upload_to_db(clean_df, 'dim_orders')
 
 
+def process_sales_data():
+    resource_uri = r'https://data-handling-public.s3.eu-west-1.amazonaws.com/date_details.json'
+    df = DataExtractor.extract_from_uri(resource_uri)
+    data_cleaner = DataCleaning()
+    clean_df = data_cleaner.clean_sales_data(df)
+    DatabaseConnector.upload_to_db(clean_df, 'dim_date_times')
+
+
 if __name__ == "__main__":
     # process_users_data()
     # process_user_card_data()
     # process_store_data()
     # process_product_details()
-    process_orders_data()
+    # process_orders_data()
+    process_sales_data()
