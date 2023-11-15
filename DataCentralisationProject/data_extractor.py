@@ -7,18 +7,19 @@ from io import StringIO
 import pandas as pd
 from pandas import DataFrame
 import tabula
-from sqlalchemy import Engine
 import boto3
+
+from database_utils import DatabaseConnector
 
 logger = logging.getLogger('data_extractor')
 
 
 class DataExtractor:
     @staticmethod
-    def read_rds_table(engine: Engine, src_table: str) -> DataFrame:
+    def read_rds_table(db_connector: DatabaseConnector, src_table: str) -> DataFrame:
         """Read database table into Pandas DataFrame."""
         # Use context manager to avoid dangling open connection
-        user_df = pd.read_sql_table(table_name=src_table, con=engine)
+        user_df = pd.read_sql_table(table_name=src_table, con=db_connector.engine)
         return user_df
 
     @staticmethod

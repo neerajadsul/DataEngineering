@@ -7,14 +7,13 @@ from data_cleaning import DataCleaning
 def process_users_data():
     """Gather data from multiple sources and upload to the central database."""
     # Customer's data retrieval
-    creds = DatabaseConnector.read_db_creds("db_creds_aws_rds.yaml")
-    engine = DatabaseConnector.init_db_engine(creds)
-    table_names = DatabaseConnector.list_db_tables(engine)
+    db_connector = DatabaseConnector("db_creds_aws_rds.yaml")
+    table_names = db_connector.list_db_tables()
     users_table = [name for name in table_names if "users" in name]
     assert len(users_table) == 1
     users_table = users_table[0]
     # - Read users raw data from AWS RDS database
-    users_df = DataExtractor.read_rds_table(engine, users_table)
+    users_df = DataExtractor.read_rds_table(db_connector, users_table)
     # Customer's Data Cleaning
     data_cleaner = DataCleaning()
     # - Clean raw users data before uploading to central database
