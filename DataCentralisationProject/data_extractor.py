@@ -81,14 +81,20 @@ class DataExtractor:
 
     @staticmethod
     def extract_from_s3(resource_uri) -> DataFrame:
-        bucket = 'data-handling-public'
-        file_name = 'products.csv'
+        bucket, file_key = DataExtractor._get_bucket_key_file(resource_uri)
         s3 = boto3.client('s3')
-
-        file_object = s3.get_object(Bucket=bucket, Key=file_name)
+        file_object = s3.get_object(Bucket=bucket, Key=file_key)
         df = pd.read_csv(file_object['Body'])
 
         return df
+
+    @staticmethod
+    def _get_bucket_key_file(s3_uri: str) -> tuple:
+        tokens = [x for x in s3_uri.rsplit('/') if x != '']
+        file_key = '/'.join(tokens[2:])
+        bucket = tokens[1]
+        return bucket, file_key
+
 
     @staticmethod
     def extract_from_uri(resource_uri) -> DataFrame:
