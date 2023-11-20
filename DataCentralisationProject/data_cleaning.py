@@ -17,8 +17,8 @@ class DataCleaning:
         users_df.drop_duplicates(inplace=True)
 
         # Cleaning date columns: date_of_birth and join_date
-        users_df['date_of_birth'] = pd.to_datetime(users_df['date_of_birth'], infer_datetime_format=True, errors='coerce')
-        users_df['join_date'] = pd.to_datetime(users_df['join_date'], infer_datetime_format=True, errors='coerce')
+        users_df['date_of_birth'] = pd.to_datetime(users_df['date_of_birth'], errors='coerce')
+        users_df['join_date'] = pd.to_datetime(users_df['join_date'], errors='coerce')
 
         # Check invalid date when after current date
         users_df.loc[users_df['date_of_birth'] > np.datetime64(datetime.datetime.now()), 'date_of_birth'] = np.NaN
@@ -105,7 +105,7 @@ class DataCleaning:
         :return: cleaned data
         """
         MIN_ADDRESS_LENGTH = 10
-        # Remove row without a valid address 
+        # Remove row without a valid address
         invalid_addresses = stores_df[stores_df['address'].str.len() < MIN_ADDRESS_LENGTH].index
         stores_df.drop(invalid_addresses, inplace=True)
         stores_df['longitude'] = stores_df['latitude'].fillna(np.NaN)
