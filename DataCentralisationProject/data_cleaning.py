@@ -126,14 +126,34 @@ class DataCleaning:
 
         return stores_df
 
-    def convert_product_weights(self, products_df):
+    def _convert_product_weights(self, df):
         """Convert all units to kg, assuming 1ml approx equal to 1g.
 
         :param products_df: dataframe for products information
         :return: dataframe with converted weights to kg
         """
+        # Find multipacks and convert to bulk weight
+        weight_regex = r'[0-9]{1,}.?([0-9]{1,})?[mlkgoz]+'
+        multipack_index = df['weight'][~df['weight'].str.match(weight_regex)].index
+        df['weight'][multipack_index] = df['weight'][multipack_index].apply(DataCleaning.__multipack_to_bulk)
+        # Convert ml to g
+        ml_regex = r'[0-9]{1,}.?([0-9]{1,})?[ml]+'
+        ml_index = df['weight'][df['weight'].str.match(ml_regex)].index
+        df['weight'][ml_index] = df['weight'][ml_index].apply(lambda x: x[:-2] + 'g')
+        # Convert 16 oz to kg
+        oz_regex = r'[0-9]{1,}.?([0-9]{1,})?[oz]+'
+        oz_index = df['weight'][df['weight'].str.match(oz_regex)].index
+        df['weight'][oz_index] = df['weight'][oz_index].apply(
+            lambda x: str(round(float(x[:-2])*455/16)) + 'g')
 
-        return products_df
+        gram_regex = r'[0-9]{1,}.?([0-9]{1,})?[^k][g]{1}'
+        gram_index = df['weight'][df['weight'].str.match(gram_regex)].index
+        df['weight'][gram_index] = df['weight'][gram_index].apply(DataCleaning.__grams_to_kg)
+
+        kg_index = df[df['weight'].apply(lambda x: str(x).endswith('kg'))].index
+        df['weight'][kg_index] = df['weight'][kg_index].apply(lambda x: float(x[:-2]))
+
+        return df
 
     def clean_products_data(self, df) -> DataFrame:
         """Sanitize products data.
@@ -147,6 +167,7 @@ class DataCleaning:
         df = df.drop(df[~df['product_price'].str.match(price_regex)].index)
         df = df.drop(df[df['product_price'].isna()].index)
         df = df.drop(df[df['weight'].isna()].index)
+        df = self._convert_product_weights(df)
         df['category'] = df['category'].fillna('')
         df['EAN'] = df['EAN'].fillna('')
         df['date_added'] = pd.to_datetime(df['date_added'], errors='coerce')
@@ -154,6 +175,23 @@ class DataCleaning:
         df['product_code'] = df['product_code'].fillna('')
 
         return df
+
+    @staticmethod
+    def __multipack_to_bulk(pack):
+        n, amount = pack.split(' x ')
+        numeric_amount = ''
+        unit_measure = ''
+        for c in amount:
+            if c.isdigit():
+                numeric_amount += c
+            if c.isalpha():
+                unit_measure += c
+        return str(float(n) * float(numeric_amount)) + unit_measure
+
+    @staticmethod
+    def __grams_to_kg(grams):
+        amount = grams.split('g')[0]
+        return round(float(amount)/1000, 3)
 
     def clean_orders_data(self, df) -> DataFrame:
         """Sanitize orders data.
