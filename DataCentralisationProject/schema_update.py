@@ -119,7 +119,39 @@ def alter_users_table(dsu: DbSchemaUpdater):
     dsu.convert_to_date(TABLE_NAME, 'join_date')
 
 
+def alter_stores_table(dsu: DbSchemaUpdater):
+    """Update stores detail table schema as per the specifications below.
+    +---------------------+-------------------+------------------------+
+    | store_details_table | current data type |   required data type   |
+    +---------------------+-------------------+------------------------+
+    | longitude           | TEXT              | FLOAT                  |
+    | locality            | TEXT              | VARCHAR(255)           |
+    | store_code          | TEXT              | VARCHAR(?)             |
+    | staff_numbers       | TEXT              | SMALLINT               |
+    | opening_date        | TEXT              | DATE                   |
+    | store_type          | TEXT              | VARCHAR(255) NULLABLE  |
+    | latitude            | TEXT              | FLOAT                  |
+    | country_code        | TEXT              | VARCHAR(?)             |
+    | continent           | TEXT              | VARCHAR(255)           |
+    +---------------------+-------------------+------------------------+
+
+    :param dsu: DbSchemaUpdater
+    """
+    TABLE_NAME = 'dim_stores_data'
+    dsu._convert_to_float(TABLE_NAME, 'longitude')
+    dsu._convert_to_float(TABLE_NAME, 'latitude')
+    dsu._convert_to_varchar(TABLE_NAME, 'locality', max_data_length=255)
+    dsu._convert_to_varchar(TABLE_NAME, 'store_code', max_data_length=True)
+    dsu._convert_to_smallint(TABLE_NAME, 'staff_numbers')
+    dsu.convert_to_date(TABLE_NAME, 'opening_date')
+    dsu._convert_to_varchar(TABLE_NAME, 'store_type', max_data_length=255)
+    dsu.set_column_nullable(TABLE_NAME, 'store_type')
+    dsu._convert_to_varchar(TABLE_NAME, 'country_code', max_data_length=True)
+    dsu._convert_to_varchar(TABLE_NAME, 'continent', max_data_length=255)
+
+
 if __name__ == "__main__":
     dsu = DbSchemaUpdater('db_creds_central.yaml')
     # alter_orders_table(dsu)
-    alter_users_table(dsu)
+    # alter_users_table(dsu)
+    alter_stores_table(dsu)
