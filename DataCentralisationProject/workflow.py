@@ -19,7 +19,8 @@ def process_users_data():
     # - Clean raw users data before uploading to central database
     clean_user_df = data_cleaner.clean_user_data(users_df=users_df)
     # - Upload cleaned data to central database
-    DatabaseConnector.upload_to_db(clean_user_df, 'dim_users')
+    db_connector = DatabaseConnector('db_creds_central.yaml')
+    db_connector.upload_to_db(clean_user_df, 'dim_users')
 
 
 def process_user_card_data():
@@ -30,7 +31,8 @@ def process_user_card_data():
     data_cleaner = DataCleaning()
     clean_card_df = data_cleaner.clean_card_data(card_df)
     # Upload cards data to central database
-    DatabaseConnector.upload_to_db(clean_card_df, 'dim_card_details')
+    db_connector = DatabaseConnector('db_creds_central.yaml')
+    db_connector.upload_to_db(clean_card_df, 'dim_card_details')
 
 
 def process_store_data():
@@ -44,7 +46,8 @@ def process_store_data():
         )
     data_cleaner = DataCleaning()
     clean_stores_df = data_cleaner.clean_store_data(stores_df)
-    DatabaseConnector.upload_to_db(clean_stores_df, 'dim_stores_data')
+    db_connector = DatabaseConnector('db_creds_central.yaml')
+    db_connector.upload_to_db(clean_stores_df, 'dim_stores_data')
 
 
 def process_product_details():
@@ -52,24 +55,25 @@ def process_product_details():
     products_df = DataExtractor.extract_from_s3(resource_uri)
     data_cleaner = DataCleaning()
     clean_products_df = data_cleaner.clean_products_data(products_df)
-    DatabaseConnector.upload_to_db(clean_products_df, 'dim_products')
+    db_connector = DatabaseConnector('db_creds_central.yaml')
+    db_connector.upload_to_db(clean_products_df, 'dim_products')
 
 
 def process_orders_data():
     # Orders's data retrieval
-    creds = DatabaseConnector.read_db_creds("db_creds_aws_rds.yaml")
-    engine = DatabaseConnector.init_db_engine(creds)
-    table_names = DatabaseConnector.list_db_tables(engine)
+    db_connector = DatabaseConnector("db_creds_aws_rds.yaml")
+    table_names = db_connector.list_db_tables()
     table = [name for name in table_names if "orders" in name]
     assert len(table) == 1
     # - Read users raw data from AWS RDS database
-    df = DataExtractor.read_rds_table(engine, table[0])
+    df = DataExtractor.read_rds_table(db_connector, table[0])
     # Orders's Data Cleaning
     # - Clean raw orders data before uploading to central database
     data_cleaner = DataCleaning()
     clean_df = data_cleaner.clean_orders_data(df)
     # - Upload cleaned data to central database
-    DatabaseConnector.upload_to_db(clean_df, 'dim_orders')
+    db_connector = DatabaseConnector('db_creds_central.yaml')
+    db_connector.upload_to_db(clean_df, 'dim_orders')
 
 
 def process_sales_data():
@@ -77,7 +81,8 @@ def process_sales_data():
     df = DataExtractor.extract_from_uri(resource_uri)
     data_cleaner = DataCleaning()
     clean_df = data_cleaner.clean_sales_data(df)
-    DatabaseConnector.upload_to_db(clean_df, 'dim_date_times')
+    db_connector = DatabaseConnector('db_creds_central.yaml')
+    db_connector.upload_to_db(clean_df, 'dim_date_times')
 
 
 if __name__ == "__main__":
