@@ -26,9 +26,16 @@ class DbSchemaUpdater:
 
     def _convert_to_smallint(self, table_name, column_name):
         query_smallint = text(f'''ALTER TABLE {table_name}
-                                   ALTER COLUMN {column_name} TYPE smallint;''')
+                                   ALTER COLUMN {column_name} TYPE smallint USING {column_name}::smallint;''')
         with self.engine.connect() as conn:
             conn.execute(query_smallint)
+            conn.commit()
+
+    def _convert_to_float(self, table_name, column_name):
+        query_float = text(f'''ALTER TABLE {table_name}
+                                   ALTER COLUMN {column_name} TYPE float USING {column_name}::double precision;''')
+        with self.engine.connect() as conn:
+            conn.execute(query_float)
             conn.commit()
 
     def _convert_to_text(self, table_name, column_name):
@@ -49,6 +56,13 @@ class DbSchemaUpdater:
                             ALTER COLUMN {column_name} TYPE date''')
         with self.engine.connect() as conn:
             conn.execute(query_to_date)
+            conn.commit()
+
+    def set_column_nullable(self, table_name, column_name):
+        query_nullable = text(f'''ALTER TABLE {table_name}
+                            ALTER COLUMN {column_name} DROP NOT NULL;''')
+        with self.engine.connect() as conn:
+            conn.execute(query_nullable)
             conn.commit()
 
 
