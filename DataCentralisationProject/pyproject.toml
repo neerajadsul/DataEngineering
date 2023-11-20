@@ -8,3 +8,32 @@ quote-style = "single"
 
 [tool.flake8]
 # Configurations for flake8 linter
+[tool.poetry]
+name = "datacentralisationproject"
+version = "0.1.0"
+description = "Data ingestion, cleaning and consolidation for analytics usage."
+authors = ["Neeraj Adsul"]
+license = "Apache-2.0"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11.0"
+pandas = "^2.1.3"
+SQLAlchemy = "^2.0.23"
+tabula-py = "^2.8.2"
+boto3 = "^1.29.3"
+PyYAML = "^6.0.1"
+numpy = "^1.26.2"
+requests = "^2.31.0"
+
+[tool.poetry.group.dev]
+optional = true
+
+[tool.poetry.group.dev.dependencies]
+jupyterlab = "^4.0.9"
+ipython = "^8.17.2"
+psycopg2-binary = "^2.9.9"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
