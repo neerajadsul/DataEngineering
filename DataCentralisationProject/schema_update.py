@@ -139,7 +139,12 @@ def alter_stores_table(dsu: DbSchemaUpdater):
     """
     TABLE_NAME = 'dim_stores_data'
     dsu._convert_to_float(TABLE_NAME, 'longitude')
-    dsu._convert_to_float(TABLE_NAME, 'latitude')
+    # Merge latitude and lat into latitude
+    with dsu.engine.connect() as conn:
+        conn.execute(text(f'UPDATE {TABLE_NAME} SET latitude = CAST(CONCAT(lat, latitude) AS DOUBLE PRECISION);'))
+        conn.execute(text(f'ALTER TABLE {TABLE_NAME} DROP COLUMN lat'))
+        conn.commit()
+
     dsu._convert_to_varchar(TABLE_NAME, 'locality', max_data_length=255)
     dsu._convert_to_varchar(TABLE_NAME, 'store_code', max_data_length=True)
     dsu._convert_to_smallint(TABLE_NAME, 'staff_numbers')
