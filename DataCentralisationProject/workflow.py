@@ -86,9 +86,9 @@ def process_sales_data():
 
 
 if __name__ == "__main__":
-    # process_users_data()
-    # process_user_card_data()
-    # process_store_data()
-    # process_product_details()
-    # process_orders_data()
+    process_users_data()
+    process_user_card_data()
+    process_store_data()
+    process_product_details()
+    process_orders_data()
     process_sales_data()
