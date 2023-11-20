@@ -73,7 +73,31 @@ def alter_orders_table(dsu: DbSchemaUpdater):
     dsu._convert_to_varchar('product_code', max_data_length=True)
 
 
+def alter_users_table(dsu: DbSchemaUpdater):
+    """Update tables schema as per the specifications below:
+    +----------------+--------------------+--------------------+
+    | dim_user_table | current data type  | required data type |
+    +----------------+--------------------+--------------------+
+    | first_name     | TEXT               | VARCHAR(255)       |
+    | last_name      | TEXT               | VARCHAR(255)       |
+    | date_of_birth  | TEXT               | DATE               |
+    | country_code   | TEXT               | VARCHAR(?)         |
+    | user_uuid      | TEXT               | UUID               |
+    | join_date      | TEXT               | DATE               |
+    +----------------+--------------------+--------------------+
+
+    :param dsu: DbSchemaUpdater
+    """
+    TABLE_NAME = 'dim_users'
+    dsu._convert_to_varchar(TABLE_NAME, 'first_name', 255)
+    dsu._convert_to_varchar(TABLE_NAME, 'last_name', 255)
+    dsu.convert_to_date(TABLE_NAME, 'date_of_birth')
+    dsu._convert_to_varchar(TABLE_NAME, 'country_code', max_data_length=True)
+    dsu._convert_to_uuid(TABLE_NAME, 'user_uuid')
+    dsu.convert_to_date(TABLE_NAME, 'join_date')
+
 
 if __name__ == "__main__":
     dsu = DbSchemaUpdater('db_creds_central.yaml')
-    alter_orders_table(dsu)
+    # alter_orders_table(dsu)
+    alter_users_table(dsu)
