@@ -5,7 +5,6 @@ line-length = 120
 # Configuration for ruff auto-formatter
 # Prefer single quotes over double quotes.
 quote-style = "single"
-max
 
 [tool.flake8]
 # Configurations for flake8 linter

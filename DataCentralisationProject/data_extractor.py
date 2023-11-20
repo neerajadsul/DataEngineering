@@ -7,18 +7,19 @@ from io import StringIO
 import pandas as pd
 from pandas import DataFrame
 import tabula
-from sqlalchemy import Engine
 import boto3
+
+from database_utils import DatabaseConnector
 
 logger = logging.getLogger('data_extractor')
 
 
 class DataExtractor:
     @staticmethod
-    def read_rds_table(engine: Engine, src_table: str) -> DataFrame:
+    def read_rds_table(db_connector: DatabaseConnector, src_table: str) -> DataFrame:
         """Read database table into Pandas DataFrame."""
         # Use context manager to avoid dangling open connection
-        user_df = pd.read_sql_table(table_name=src_table, con=engine)
+        user_df = pd.read_sql_table(table_name=src_table, con=db_connector.engine)
         return user_df
 
     @staticmethod
@@ -80,14 +81,20 @@ class DataExtractor:
 
     @staticmethod
     def extract_from_s3(resource_uri) -> DataFrame:
-        bucket = 'data-handling-public'
-        file_name = 'products.csv'
+        bucket, file_key = DataExtractor._get_bucket_key_file(resource_uri)
         s3 = boto3.client('s3')
-
-        file_object = s3.get_object(Bucket=bucket, Key=file_name)
+        file_object = s3.get_object(Bucket=bucket, Key=file_key)
         df = pd.read_csv(file_object['Body'])
 
         return df
+
+    @staticmethod
+    def _get_bucket_key_file(s3_uri: str) -> tuple:
+        tokens = [x for x in s3_uri.rsplit('/') if x != '']
+        file_key = '/'.join(tokens[2:])
+        bucket = tokens[1]
+        return bucket, file_key
+
 
     @staticmethod
     def extract_from_uri(resource_uri) -> DataFrame:

@@ -2,11 +2,12 @@
 import logging
 import pandas as pd
 
-from ..data_cleaning import DataCleaning
+from data_cleaning import DataCleaning
 
 logger = logging.getLogger()
 
-class TestDataCleaning():
+
+class TestDataCleaning:
 
     data_cleaner = DataCleaning()
 
