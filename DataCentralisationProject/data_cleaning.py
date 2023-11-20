@@ -30,6 +30,11 @@ class DataCleaning:
         # Cleaning up phone numbers: phone_number
         users_df['phone_number'] = self.phone_validation(users_df['phone_number'])
 
+        # Cleaning up user UUIDs: user_uuid
+        user_uuid_regex = r'[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}'
+        invalid_user_uuid = users_df[~users_df['user_uuid'].str.match(user_uuid_regex)].index
+        users_df = users_df.drop(invalid_user_uuid)
+
         # log some statistics for investigation when needed
         logger.debug('Number of NaNs: ', users_df.isna().sum())
         logger.debug('Number of Nulls: ', users_df.isnull().sum())
