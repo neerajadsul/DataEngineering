@@ -224,9 +224,32 @@ def alter_products_table(dsu: DbSchemaUpdater):
     dsu._convert_to_varchar(TABLE_NAME, 'weight_class', max_data_length=True)
 
 
+def alter_sales_date_times_table(dsu: DbSchemaUpdater):
+    """Update sales data table containing dates and times as per specifications below
+    +-----------------+-------------------+--------------------+
+    | dim_date_times  | current data type | required data type |
+    +-----------------+-------------------+--------------------+
+    | month           | TEXT              | VARCHAR(?)         |
+    | year            | TEXT              | VARCHAR(?)         |
+    | day             | TEXT              | VARCHAR(?)         |
+    | time_period     | TEXT              | VARCHAR(?)         |
+    | date_uuid       | TEXT              | UUID               |
+    +-----------------+-------------------+--------------------+
+
+    :param dsu: DbSchemaUpdater
+    """
+    TABLE_NAME = 'dim_date_times'
+    dsu._convert_to_varchar(TABLE_NAME, 'month', max_data_length=True)
+    dsu._convert_to_varchar(TABLE_NAME, 'year', max_data_length=True)
+    dsu._convert_to_varchar(TABLE_NAME, 'day', max_data_length=True)
+    dsu._convert_to_varchar(TABLE_NAME, 'time_period', max_data_length=True)
+    dsu._convert_to_uuid(TABLE_NAME, 'date_uuid')
+
+
 if __name__ == "__main__":
     dsu = DbSchemaUpdater('db_creds_central.yaml')
     # alter_orders_table(dsu)
     # alter_users_table(dsu)
     # alter_stores_table(dsu)
-    alter_products_table(dsu)
+    # alter_products_table(dsu)
+    alter_sales_date_times_table(dsu)
