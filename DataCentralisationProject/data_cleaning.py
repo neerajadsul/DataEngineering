@@ -109,17 +109,28 @@ class DataCleaning:
         :param store_df: raw retail store data
         :return: cleaned data
         """
-        MIN_ADDRESS_LENGTH = 10
+        # Remove stores data with invalud staff numbers
+        invalid_staff_numbers = stores_df[stores_df['staff_numbers'].apply(lambda x: not x.strip().isnumeric())].index
+        stores_df.loc[invalid_staff_numbers, 'staff_numbers'] = 0
+        MIN_ADDRESS_LENGTH = 3
         # Remove row without a valid address
         invalid_addresses = stores_df[stores_df['address'].str.len() < MIN_ADDRESS_LENGTH].index
         stores_df.drop(invalid_addresses, inplace=True)
-        stores_df['longitude'] = stores_df['latitude'].fillna(np.NaN)
+        lat_long_regex = r'-?\d{1,3}.\d{1,}'
+        invalid_lat = stores_df[(~stores_df['latitude'].str.match(lat_long_regex, na=False))].index
+        stores_df.loc[invalid_lat, 'latitude'] = np.nan
+        invalid_lat = stores_df[(~stores_df['lat'].str.match(lat_long_regex, na=False))].index
+        stores_df.loc[invalid_lat, 'lat'] = np.nan
+        invalid_long = stores_df[(~stores_df['longitude'].str.match(lat_long_regex, na=False))].index
+        stores_df.loc[invalid_long, 'longitude'] = np.nan
+        stores_df['latitude'] = stores_df['latitude'].fillna(np.NaN)
         stores_df['longitude'] = stores_df['longitude'].fillna(np.NaN)
-        stores_df['locality'] = stores_df['locality'].fillna("")
-        stores_df['store_code'].fillna('')
-        invalid_staff_numbers = stores_df[stores_df['staff_numbers'].apply(lambda x: not x.isnumeric())].index
-        stores_df.drop(invalid_staff_numbers, inplace=True)
-        stores_df['opening_date'] = pd.to_datetime(stores_df['opening_date'], format='mixed')
+
+        stores_df['locality'] = stores_df['locality'].fillna("N/A")
+        stores_df = stores_df.dropna(subset=['store_code'])
+        stores_df = stores_df.dropna(thresh=4)
+        
+        stores_df['opening_date'] = pd.to_datetime(stores_df['opening_date'], format='mixed', errors='coerce')
         stores_df['store_type'] = stores_df['store_type'].fillna('')
         stores_df['country_code'] = stores_df['country_code'].fillna('')
         stores_df['continent'] = stores_df['continent'].fillna('')
