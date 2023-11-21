@@ -249,10 +249,29 @@ def alter_sales_date_times_table(dsu: DbSchemaUpdater):
     dsu._convert_to_uuid(TABLE_NAME, 'date_uuid')
 
 
+def alter_card_details_table(dsu: DbSchemaUpdater):
+    """Update card details table as per the specifications below:
+    +------------------------+-------------------+--------------------+
+    |    dim_card_details    | current data type | required data type |
+    +------------------------+-------------------+--------------------+
+    | card_number            | TEXT              | VARCHAR(?)         |
+    | expiry_date            | TEXT              | VARCHAR(?)         |
+    | date_payment_confirmed | TEXT              | DATE               |
+    +------------------------+-------------------+--------------------+
+
+    :param dsu: DbSchemaUpdater
+    """
+    TABLE_NAME = 'dim_card_details'
+    dsu._convert_to_varchar(TABLE_NAME, 'card_number', max_data_length=True)
+    dsu._convert_to_varchar(TABLE_NAME, 'expiry_date', max_data_length=True)
+    dsu.convert_to_date(TABLE_NAME, 'date_payment_confirmed', casting=True)
+
+
 if __name__ == "__main__":
     dsu = DbSchemaUpdater('db_creds_central.yaml')
     # alter_orders_table(dsu)
     # alter_users_table(dsu)
     # alter_stores_table(dsu)
     # alter_products_table(dsu)
-    alter_sales_date_times_table(dsu)
+    # alter_sales_date_times_table(dsu)
+    alter_card_details_table(dsu)
