@@ -51,9 +51,12 @@ class DbSchemaUpdater:
             conn.execute(query_uuid)
             conn.commit()
 
-    def convert_to_date(self, table_name, column_name):
+    def convert_to_date(self, table_name, column_name, casting=False):
+        additional = ''
+        if casting:
+            additional = f'USING {column_name}::date'
         query_to_date = text(f'''ALTER TABLE {table_name}
-                            ALTER COLUMN {column_name} TYPE date''')
+                            ALTER COLUMN {column_name} TYPE date {additional}''')
         with self.engine.connect() as conn:
             conn.execute(query_to_date)
             conn.commit()
