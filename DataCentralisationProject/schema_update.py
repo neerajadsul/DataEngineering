@@ -168,8 +168,59 @@ def alter_stores_table(dsu: DbSchemaUpdater):
     dsu._convert_to_varchar(TABLE_NAME, 'continent', max_data_length=255)
 
 
+def alter_products_table(dsu: DbSchemaUpdater):
+    """Update products table as per the specifications below.
+    +-----------------+--------------------+--------------------+
+    |  dim_products   | current data type  | required data type |
+    +-----------------+--------------------+--------------------+
+    | product_price   | TEXT               | FLOAT              |
+    | weight          | TEXT               | FLOAT              |
+    | EAN             | TEXT               | VARCHAR(?)         |
+    | product_code    | TEXT               | VARCHAR(?)         |
+    | date_added      | TEXT               | DATE               |
+    | uuid            | TEXT               | UUID               |
+    | removed         | TEXT               | BOOL               |
+    | weight_class    | TEXT               | VARCHAR(?)         |
+    +-----------------+--------------------+--------------------+
+
+    :param dsu: DbSchemaUpdater
+    """
+    # Remove £ from product_price column
+    with dsu.engine.connect() as conn:
+        conn.execute(text("UPDATE dim_products SET product_price = TRIM('£' FROM product_price);"))
+        conn.commit()
+    TABLE_NAME = 'dim_products'
+    # Convert weight to float
+    dsu._convert_to_float(TABLE_NAME, 'weight')
+    # Add new column `weight_class`
+    with dsu.engine.connect() as conn:
+        conn.execute(text(f'ALTER TABLE {TABLE_NAME} ADD COLUMN weight_class TEXT;'))
+        conn.execute(text(f'''INSERT INTO {TABLE_NAME} (weight_class)
+            (
+                SELECT CASE
+                    WHEN weight < 2 THEN 'Light'
+                    WHEN weight >= 2 AND weight < 40 THEN 'Mid_Sized'
+                    WHEN weight >=40 AND weight < 140 THEN 'Heavy'
+                    WHEN weight >= 140 THEN 'Truck_Required'
+                END AS weight_class
+                FROM dim_products
+            )
+        '''))
+        conn.commit()
+    dsu._convert_to_float(TABLE_NAME, 'product_price')
+    dsu._convert_to_float(TABLE_NAME, 'weight')
+    dsu._convert_to_varchar(TABLE_NAME, '"EAN"', max_data_length=True)
+    dsu._convert_to_varchar(TABLE_NAME, 'product_code', max_data_length=True)
+    dsu.convert_to_date(TABLE_NAME, 'date_added')
+    dsu._convert_to_uuid(TABLE_NAME, 'uuid')
+    conditions = {True: "LIKE 'Still_ava%'", False: "LIKE 'Remove%'"}
+    dsu.convert_to_boolean(TABLE_NAME, 'removed', conditions)
+    dsu._convert_to_varchar(TABLE_NAME, 'weight_class', max_data_length=True)
+
+
 if __name__ == "__main__":
     dsu = DbSchemaUpdater('db_creds_central.yaml')
     # alter_orders_table(dsu)
     # alter_users_table(dsu)
-    alter_stores_table(dsu)
+    # alter_stores_table(dsu)
+    alter_products_table(dsu)
