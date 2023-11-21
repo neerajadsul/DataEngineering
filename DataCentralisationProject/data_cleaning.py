@@ -132,26 +132,38 @@ class DataCleaning:
         :param products_df: dataframe for products information
         :return: dataframe with converted weights to kg
         """
-        # Find multipacks and convert to bulk weight
-        weight_regex = r'[0-9]{1,}.?([0-9]{1,})?[mlkgoz]+'
-        multipack_index = df['weight'][~df['weight'].str.match(weight_regex)].index
-        df['weight'][multipack_index] = df['weight'][multipack_index].apply(DataCleaning.__multipack_to_bulk)
-        # Convert ml to g
-        ml_regex = r'[0-9]{1,}.?([0-9]{1,})?[ml]+'
-        ml_index = df['weight'][df['weight'].str.match(ml_regex)].index
-        df['weight'][ml_index] = df['weight'][ml_index].apply(lambda x: x[:-2] + 'g')
-        # Convert 16 oz to kg
-        oz_regex = r'[0-9]{1,}.?([0-9]{1,})?[oz]+'
-        oz_index = df['weight'][df['weight'].str.match(oz_regex)].index
-        df['weight'][oz_index] = df['weight'][oz_index].apply(
-            lambda x: str(round(float(x[:-2])*455/16)) + 'g')
-
-        gram_regex = r'[0-9]{1,}.?([0-9]{1,})?[^k][g]{1}'
+        # Multipack products
+        multipack_regex = r'[0-9]{1,}.?([0-9]{1,})?[mlkgoz]+'
+        multipack_index = df['weight'][~df['weight'].str.match(multipack_regex)].index
+        if len(multipack_index) > 0:
+            df.loc[multipack_index, 'weight'] = df.loc[multipack_index, 'weight'].apply(self.__multipack_to_bulk)
+        else:
+            print('No more multipack products to process')
+        # ml to kilograms
+        ml_index = df['weight'][df['weight'].str.endswith('ml')].index
+        if len(ml_index) > 0:
+            df.loc[ml_index, 'weight'] = df.loc[ml_index, 'weight'].apply(self.__ml_to_kg)
+        else:
+            print('No more liquid products in ml to process')
+        # oz to kilograms
+        oz_index = df['weight'][df['weight'].str.endswith('oz')].index
+        if len(oz_index) > 0:
+            df.loc[oz_index, 'weight'] = df.loc[oz_index, 'weight'].apply(self.__oz_to_kg)
+        else:
+            print('No more products in oz to process')
+        # Grams to kilograms
+        gram_regex = r'^[0-9]*[.]?[0-9]*[^k][g]'
         gram_index = df['weight'][df['weight'].str.match(gram_regex)].index
-        df['weight'][gram_index] = df['weight'][gram_index].apply(DataCleaning.__grams_to_kg)
-
+        if len(gram_index) > 0:
+            df.loc[gram_index, 'weight'] = df.loc[gram_index, 'weight'].apply(self.__grams_to_kg)
+        else:
+            print('No more products in grams to process')
+        # Remove kilogram units
         kg_index = df[df['weight'].apply(lambda x: str(x).endswith('kg'))].index
-        df['weight'][kg_index] = df['weight'][kg_index].apply(lambda x: float(x[:-2]))
+        if len(kg_index) > 0:
+            df.loc[kg_index, 'weight'] = df.loc[kg_index, 'weight'].apply(self.__remove_kg_unit)
+        else:
+            print('No more products in kg to process')
 
         return df
 
@@ -186,12 +198,30 @@ class DataCleaning:
                 numeric_amount += c
             if c.isalpha():
                 unit_measure += c
-        return str(float(n) * float(numeric_amount)) + unit_measure
+                if len(unit_measure) == 2:
+                    break
+        total = round(float(n) * float(numeric_amount))
+        return str(total) + unit_measure
 
     @staticmethod
-    def __grams_to_kg(grams):
+    def __grams_to_kg(grams: str):
         amount = grams.split('g')[0]
-        return round(float(amount)/1000, 3)
+        return str(round(float(amount)/1000, 3))
+
+    @staticmethod
+    def __ml_to_kg(ml: str):
+        amount = ml.split('ml')[0]
+        return str(round(float(amount)/1000, 3))
+
+    @staticmethod
+    def __oz_to_kg(oz: str):
+        amount = oz.split('oz')[0]
+        return str(round(float(amount)*455/16000, 3))
+
+    @staticmethod
+    def __remove_kg_unit(kg: str):
+        amount = kg.split('kg')[0]
+        return amount
 
     def clean_orders_data(self, df) -> DataFrame:
         """Sanitize orders data.
