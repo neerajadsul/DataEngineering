@@ -58,6 +58,19 @@ class DbSchemaUpdater:
             conn.execute(query_to_date)
             conn.commit()
 
+    def convert_to_boolean(self, table_name, column_name, conditions):
+        query_bool = text(f'''ALTER TABLE {table_name}
+            ALTER COLUMN {column_name} TYPE bool
+            USING CASE
+                WHEN {column_name} {conditions[True]} THEN true
+                WHEN {column_name} {conditions[False]} THEN false
+                ELSE false
+                END
+        ''')
+        with self.engine.connect() as conn:
+            conn.execute(query_bool)
+            conn.commit()
+
     def set_column_nullable(self, table_name, column_name):
         query_nullable = text(f'''ALTER TABLE {table_name}
                             ALTER COLUMN {column_name} DROP NOT NULL;''')
