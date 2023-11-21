@@ -88,6 +88,13 @@ class DbSchemaUpdater:
             conn.execute(query_nullable)
             conn.commit()
 
+    def set_primary_key(self, table_name, column_name):
+        query_pk = text(f'''ALTER TABLE {table_name}
+                            ADD PRIMARY KEY ({column_name});''')
+        with self.engine.connect() as conn:
+            conn.execute(query_pk)
+            conn.commit()
+
 
 def alter_orders_table(dsu: DbSchemaUpdater):
     """Update tables schema as per the specifications below:
@@ -265,6 +272,25 @@ def alter_card_details_table(dsu: DbSchemaUpdater):
     dsu._convert_to_varchar(TABLE_NAME, 'card_number', max_data_length=True)
     dsu._convert_to_varchar(TABLE_NAME, 'expiry_date', max_data_length=True)
     dsu.convert_to_date(TABLE_NAME, 'date_payment_confirmed', casting=True)
+
+
+def set_primary_keys_dim_tables(dsu: DbSchemaUpdater):
+    """Primary keys setup to have orders table as single source of truth.
+    Primary key     Corresponding Table
+    -----------------------------------
+    date_uuid       dim_date_times
+    user_uuid       dim_users
+    store_code      dim_stores_data
+    product_code    dim_products
+    card_number     dim_card_details
+
+    :param dsu: DbSchemaUpdater
+    """
+    # dsu.set_primary_key('dim_date_times', 'date_uuid')
+    dsu.set_primary_key('dim_users', 'user_uuid')
+    dsu.set_primary_key('dim_stores_data', 'store_code')
+    dsu.set_primary_key('dim_products', 'product_code')
+    dsu.set_primary_key('dim_card_details', 'card_number')
 
 
 if __name__ == "__main__":
