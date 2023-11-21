@@ -221,7 +221,7 @@ def alter_products_table(dsu: DbSchemaUpdater):
     # Change column type to bool
     conditions = {True: "LIKE 'Still_ava%'", False: "LIKE 'Remove%'"}
     dsu.convert_to_boolean(TABLE_NAME, 'still_available', conditions)
-    # dsu._convert_to_varchar(TABLE_NAME, 'weight_class', max_data_length=True)
+    dsu._convert_to_varchar(TABLE_NAME, 'weight_class', max_data_length=True)
 
 
 if __name__ == "__main__":
