@@ -38,7 +38,7 @@ class DataExtractor:
             logger.error(e)
             raise e
         else:
-            return dfs[0]
+            return pd.concat(dfs)
 
     @staticmethod
     def list_number_of_stores(header_details, endpoint):
