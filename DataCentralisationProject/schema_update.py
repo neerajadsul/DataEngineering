@@ -95,6 +95,23 @@ class DbSchemaUpdater:
             conn.execute(query_pk)
             conn.commit()
 
+    def add_foreign_key_constraint(self, central_table, central_column, dim_table, dim_column):
+        """Add foreign key constraint to central column refering to dimensions table primary key.
+
+        :param central_table: _description_
+        :param central_column: _description_
+        :param dim_table: _description_
+        :param dim_column: _description_
+        """
+        query_fk_pk = text(f'''ALTER TABLE {central_table}
+                            ADD CONSTRAINT fk_{central_column}
+                            FOREIGN KEY ({central_column})
+                            REFERENCES {dim_table}({dim_column});''')
+
+        with self.engine.connect() as conn:
+            conn.execute(query_fk_pk)
+            conn.commit()
+
 
 def alter_orders_table(dsu: DbSchemaUpdater):
     """Update tables schema as per the specifications below:
@@ -111,9 +128,10 @@ def alter_orders_table(dsu: DbSchemaUpdater):
 
     :param dsu: DbSchemaUpdater
     """
-    TABLE_NAME = 'dim_orders'
+    TABLE_NAME = 'orders_table'
     # Convert date and user columns to UUIDs
     dsu._convert_to_uuid(TABLE_NAME, 'date_uuid')
+    dsu._convert_to_uuid(TABLE_NAME, 'user_uuid')
     # Convert product quantity to SMALLINT from BIGINT
     dsu._convert_to_smallint(TABLE_NAME, 'product_quantity')
     # Convert card_number to TEXT
@@ -169,9 +187,9 @@ def alter_stores_table(dsu: DbSchemaUpdater):
     """
     TABLE_NAME = 'dim_stores_data'
     dsu._convert_to_float(TABLE_NAME, 'longitude')
-    # Merge latitude and lat into latitude
+    # Merge latitude and lat into latitude, drop lat
     with dsu.engine.connect() as conn:
-        conn.execute(text(f'UPDATE {TABLE_NAME} SET latitude = CAST(CONCAT(lat, latitude) AS DOUBLE PRECISION);'))
+        conn.execute(text(f'UPDATE {TABLE_NAME} SET latitude = CAST(CONCAT(lat, latitude, 0) AS DOUBLE PRECISION);'))
         conn.execute(text(f'ALTER TABLE {TABLE_NAME} DROP COLUMN lat'))
         conn.commit()
 
@@ -286,18 +304,40 @@ def set_primary_keys_dim_tables(dsu: DbSchemaUpdater):
 
     :param dsu: DbSchemaUpdater
     """
-    # dsu.set_primary_key('dim_date_times', 'date_uuid')
+    dsu.set_primary_key('dim_date_times', 'date_uuid')
     dsu.set_primary_key('dim_users', 'user_uuid')
     dsu.set_primary_key('dim_stores_data', 'store_code')
     dsu.set_primary_key('dim_products', 'product_code')
     dsu.set_primary_key('dim_card_details', 'card_number')
 
 
+def set_foreign_keys_orders_table(dsu: DbSchemaUpdater):
+    """Set up specified foreign keys from following tables
+    Foreign key     Corresponding Table
+    -----------------------------------
+    date_uuid       dim_date_times
+    user_uuid       dim_users
+    store_code      dim_stores_data
+    product_code    dim_products
+    card_number     dim_card_details
+
+    :param dsu: _description_
+    """
+    CENTRAL_TABLE = 'orders_table'
+    dsu.add_foreign_key_constraint(CENTRAL_TABLE, 'date_uuid', 'dim_date_times', 'date_uuid')
+    dsu.add_foreign_key_constraint(CENTRAL_TABLE, 'user_uuid', 'dim_users', 'user_uuid')
+    dsu.add_foreign_key_constraint(CENTRAL_TABLE, 'store_code', 'dim_stores_data', 'store_code')
+    dsu.add_foreign_key_constraint(CENTRAL_TABLE, 'product_code', 'dim_products', 'product_code')
+    dsu.add_foreign_key_constraint(CENTRAL_TABLE, 'card_number', 'dim_card_details', 'card_number')
+
+
 if __name__ == "__main__":
     dsu = DbSchemaUpdater('db_creds_central.yaml')
-    # alter_orders_table(dsu)
-    # alter_users_table(dsu)
-    # alter_stores_table(dsu)
-    # alter_products_table(dsu)
-    # alter_sales_date_times_table(dsu)
+    alter_orders_table(dsu)
+    alter_users_table(dsu)
+    alter_stores_table(dsu)
+    alter_products_table(dsu)
+    alter_sales_date_times_table(dsu)
     alter_card_details_table(dsu)
+    set_primary_keys_dim_tables(dsu)
+    set_foreign_keys_orders_table(dsu)
