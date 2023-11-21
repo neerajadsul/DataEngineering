@@ -71,6 +71,13 @@ class DbSchemaUpdater:
             conn.execute(query_bool)
             conn.commit()
 
+    def rename_column(self, table_name, column_name, new_name):
+        query_rename = text(f'''ALTER TABLE {table_name}
+                                RENAME COLUMN {column_name} TO {new_name};''')
+        with self.engine.connect() as conn:
+            conn.execute(query_rename)
+            conn.commit()
+
     def set_column_nullable(self, table_name, column_name):
         query_nullable = text(f'''ALTER TABLE {table_name}
                             ALTER COLUMN {column_name} DROP NOT NULL;''')
