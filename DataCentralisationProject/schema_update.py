@@ -202,27 +202,26 @@ def alter_products_table(dsu: DbSchemaUpdater):
     # Add new column `weight_class`
     with dsu.engine.connect() as conn:
         conn.execute(text(f'ALTER TABLE {TABLE_NAME} ADD COLUMN weight_class TEXT;'))
-        conn.execute(text(f'''INSERT INTO {TABLE_NAME} (weight_class)
-            (
-                SELECT CASE
+        conn.execute(text(f'''UPDATE {TABLE_NAME}
+            SET weight_class = CASE
                     WHEN weight < 2 THEN 'Light'
                     WHEN weight >= 2 AND weight < 40 THEN 'Mid_Sized'
                     WHEN weight >=40 AND weight < 140 THEN 'Heavy'
                     WHEN weight >= 140 THEN 'Truck_Required'
-                END AS weight_class
-                FROM dim_products
-            )
+                END
         '''))
         conn.commit()
     dsu._convert_to_float(TABLE_NAME, 'product_price')
-    dsu._convert_to_float(TABLE_NAME, 'weight')
     dsu._convert_to_varchar(TABLE_NAME, '"EAN"', max_data_length=True)
     dsu._convert_to_varchar(TABLE_NAME, 'product_code', max_data_length=True)
     dsu.convert_to_date(TABLE_NAME, 'date_added')
     dsu._convert_to_uuid(TABLE_NAME, 'uuid')
+    # Rename column to `still_available`
+    dsu.rename_column(TABLE_NAME, 'removed', 'still_available')
+    # Change column type to bool
     conditions = {True: "LIKE 'Still_ava%'", False: "LIKE 'Remove%'"}
-    dsu.convert_to_boolean(TABLE_NAME, 'removed', conditions)
-    dsu._convert_to_varchar(TABLE_NAME, 'weight_class', max_data_length=True)
+    dsu.convert_to_boolean(TABLE_NAME, 'still_available', conditions)
+    # dsu._convert_to_varchar(TABLE_NAME, 'weight_class', max_data_length=True)
 
 
 if __name__ == "__main__":
