@@ -1,3 +1,17 @@
+-- Query the database to find out which months have produced the most sales. 
+-- The query should return the following information:
+
+-- +-------------+-------+
+-- | total_sales | month |
+-- +-------------+-------+
+-- |   673295.68 |     8 |
+-- |   668041.45 |     1 |
+-- |   657335.84 |    10 |
+-- |   650321.43 |     5 |
+-- |   645741.70 |     7 |
+-- |   645463.00 |     3 |
+-- +-------------+-------+
+
 SELECT 
     ROUND(SUM(product_quantity * product_price)::numeric, 2) AS total_sales, month,
 FROM 
