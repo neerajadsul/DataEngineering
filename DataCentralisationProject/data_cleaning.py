@@ -76,32 +76,35 @@ class DataCleaning:
         phones.loc[mask_invalid] = str()
         return phones
 
-    def clean_card_data(self, card_df: DataFrame) -> DataFrame:
-        """_summary_
+    def clean_card_data(self, df: DataFrame) -> DataFrame:
+        """Sanitize Card Data.
 
-        :param card_df: raw data frame for card transactions
+        :param df: raw data frame for card transactions
         :return: cleaned card transaction data frame.
         """
+        # Drop rows where 4 columns have empty/null value
+        df = df.dropna(thresh=4)
+        df['card_number'] = df['card_number'].astype('str')
+        # Pdf extraction leads to some card numbers prefixed with ?
+        df['card_number'] = df['card_number'].str.replace('?', '', regex=False)
         # Validate payment card number or set NaN: card_number
         # Ref: https://en.wikipedia.org/wiki/Payment_card_number
         # Card number can vary from 12 digits to 19 digits
         # most cards can be validated with Luhns Algorithm
-        card_df['card_number'] = card_df['card_number'].astype('str')
-        invalid_cards = card_df['card_number'].apply(lambda x: 12 > len(x) > 20)
-        print(f'{invalid_cards.sum()} invalid card numbers found, dropping those rows.')
-        card_df['card_number'][invalid_cards] = np.NaN
+        df.loc[~df['card_number'].str.match(r'[0-9]{9,19}'), 'card_number'] = np.NaN
+        df = df.dropna(subset='card_number')
         # Validate expiry date or set NaN: expiry_date
         expiry_date_regex = r'[0-9]{2}/[0-9]{2,4}'
-        invalid_expiry = ~card_df['expiry_date'].str.match(expiry_date_regex)
-        print(f'{invalid_expiry.sum()} invalid expiry dates found, dropping those rows.')
-        card_df['expiry_date'][invalid_expiry] = np.NaN
+        invalid_expiry = ~df['expiry_date'].str.match(expiry_date_regex)
+        print(f'{invalid_expiry.sum()} invalid expiry dates found, setting NaN.')
+        df.loc[invalid_expiry, 'expiry_date'] = np.NaN
         # Validate confirmed date of payment: date_payment_confirmed
         payment_date_regex = r'[0-9]{4}-[0-9]{2}-[0-9]{2}'
-        invalid_payment_dates = ~card_df['date_payment_confirmed'].str.match(payment_date_regex)
-        print(f'{invalid_payment_dates.sum()} invalid payment dates found, dropping those rows.')
-        card_df['date_payment_confirmed'][invalid_payment_dates] = np.NaN
+        invalid_payment_dates = ~df['date_payment_confirmed'].str.match(payment_date_regex)
+        print(f'{invalid_payment_dates.sum()} invalid payment dates found, setting NaN.')
+        df.loc[invalid_payment_dates, 'date_payment_confirmed'] = np.NaN
 
-        return card_df.dropna()
+        return df
 
     def clean_store_data(self, stores_df: DataFrame) -> DataFrame:
         """Sanitize retail stores data.
