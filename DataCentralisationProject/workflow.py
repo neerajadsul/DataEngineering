@@ -2,6 +2,7 @@
 from database_utils import DatabaseConnector
 from data_extractor import DataExtractor
 from data_cleaning import DataCleaning
+import pandas as pd
 
 
 def process_users_data():
@@ -73,7 +74,7 @@ def process_orders_data():
     clean_df = data_cleaner.clean_orders_data(df)
     # - Upload cleaned data to central database
     db_connector = DatabaseConnector('db_creds_central.yaml')
-    db_connector.upload_to_db(clean_df, 'dim_orders')
+    db_connector.upload_to_db(clean_df, 'orders_table')
 
 
 def process_sales_data():

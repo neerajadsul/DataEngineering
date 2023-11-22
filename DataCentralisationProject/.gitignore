@@ -1,2 +1,5 @@
 # Ignore experimental / scratchpad notebook
 cleaning_experiments.ipynb
+
+#VSCode
+.[vV][sS][cC]ode

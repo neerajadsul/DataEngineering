@@ -30,6 +30,11 @@ class DataCleaning:
         # Cleaning up phone numbers: phone_number
         users_df['phone_number'] = self.phone_validation(users_df['phone_number'])
 
+        # Cleaning up user UUIDs: user_uuid
+        user_uuid_regex = r'[a-z0-9]{8}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{4}-[a-z0-9]{12}'
+        invalid_user_uuid = users_df[~users_df['user_uuid'].str.match(user_uuid_regex)].index
+        users_df = users_df.drop(invalid_user_uuid)
+
         # log some statistics for investigation when needed
         logger.debug('Number of NaNs: ', users_df.isna().sum())
         logger.debug('Number of Nulls: ', users_df.isnull().sum())
@@ -71,32 +76,35 @@ class DataCleaning:
         phones.loc[mask_invalid] = str()
         return phones
 
-    def clean_card_data(self, card_df: DataFrame) -> DataFrame:
-        """_summary_
+    def clean_card_data(self, df: DataFrame) -> DataFrame:
+        """Sanitize Card Data.
 
-        :param card_df: raw data frame for card transactions
+        :param df: raw data frame for card transactions
         :return: cleaned card transaction data frame.
         """
+        # Drop rows where 4 columns have empty/null value
+        df = df.dropna(thresh=4)
+        df['card_number'] = df['card_number'].astype('str')
+        # Pdf extraction leads to some card numbers prefixed with ?
+        df['card_number'] = df['card_number'].str.replace('?', '', regex=False)
         # Validate payment card number or set NaN: card_number
         # Ref: https://en.wikipedia.org/wiki/Payment_card_number
         # Card number can vary from 12 digits to 19 digits
         # most cards can be validated with Luhns Algorithm
-        card_df['card_number'] = card_df['card_number'].astype('str')
-        invalid_cards = card_df['card_number'].apply(lambda x: 12 > len(x) > 20)
-        print(f'{invalid_cards.sum()} invalid card numbers found, dropping those rows.')
-        card_df['card_number'][invalid_cards] = np.NaN
+        df.loc[~df['card_number'].str.match(r'[0-9]{9,19}'), 'card_number'] = np.NaN
+        df = df.dropna(subset='card_number')
         # Validate expiry date or set NaN: expiry_date
         expiry_date_regex = r'[0-9]{2}/[0-9]{2,4}'
-        invalid_expiry = ~card_df['expiry_date'].str.match(expiry_date_regex)
-        print(f'{invalid_expiry.sum()} invalid expiry dates found, dropping those rows.')
-        card_df['expiry_date'][invalid_expiry] = np.NaN
+        invalid_expiry = ~df['expiry_date'].str.match(expiry_date_regex)
+        print(f'{invalid_expiry.sum()} invalid expiry dates found, setting NaN.')
+        df.loc[invalid_expiry, 'expiry_date'] = np.NaN
         # Validate confirmed date of payment: date_payment_confirmed
         payment_date_regex = r'[0-9]{4}-[0-9]{2}-[0-9]{2}'
-        invalid_payment_dates = ~card_df['date_payment_confirmed'].str.match(payment_date_regex)
-        print(f'{invalid_payment_dates.sum()} invalid payment dates found, dropping those rows.')
-        card_df['date_payment_confirmed'][invalid_payment_dates] = np.NaN
+        invalid_payment_dates = ~df['date_payment_confirmed'].str.match(payment_date_regex)
+        print(f'{invalid_payment_dates.sum()} invalid payment dates found, setting NaN.')
+        df.loc[invalid_payment_dates, 'date_payment_confirmed'] = np.NaN
 
-        return card_df.dropna()
+        return df
 
     def clean_store_data(self, stores_df: DataFrame) -> DataFrame:
         """Sanitize retail stores data.
@@ -104,31 +112,75 @@ class DataCleaning:
         :param store_df: raw retail store data
         :return: cleaned data
         """
-        MIN_ADDRESS_LENGTH = 10
+        # Remove stores data with invalud staff numbers
+        invalid_staff_numbers = stores_df[stores_df['staff_numbers'].apply(lambda x: not x.strip().isnumeric())].index
+        stores_df.loc[invalid_staff_numbers, 'staff_numbers'] = 0
+        MIN_ADDRESS_LENGTH = 3
         # Remove row without a valid address
         invalid_addresses = stores_df[stores_df['address'].str.len() < MIN_ADDRESS_LENGTH].index
         stores_df.drop(invalid_addresses, inplace=True)
-        stores_df['longitude'] = stores_df['latitude'].fillna(np.NaN)
+        lat_long_regex = r'-?\d{1,3}.\d{1,}'
+        invalid_lat = stores_df[(~stores_df['latitude'].str.match(lat_long_regex, na=False))].index
+        stores_df.loc[invalid_lat, 'latitude'] = np.nan
+        invalid_lat = stores_df[(~stores_df['lat'].str.match(lat_long_regex, na=False))].index
+        stores_df.loc[invalid_lat, 'lat'] = np.nan
+        invalid_long = stores_df[(~stores_df['longitude'].str.match(lat_long_regex, na=False))].index
+        stores_df.loc[invalid_long, 'longitude'] = np.nan
+        stores_df['latitude'] = stores_df['latitude'].fillna(np.NaN)
         stores_df['longitude'] = stores_df['longitude'].fillna(np.NaN)
-        stores_df['locality'] = stores_df['locality'].fillna("")
-        stores_df['store_code'].fillna('')
-        invalid_staff_numbers = stores_df[stores_df['staff_numbers'].apply(lambda x: not x.isnumeric())].index
-        stores_df.drop(invalid_staff_numbers, inplace=True)
-        stores_df['opening_date'] = pd.to_datetime(stores_df['opening_date'], format='mixed')
+
+        stores_df['locality'] = stores_df['locality'].fillna("N/A")
+        stores_df = stores_df.dropna(subset=['store_code'])
+        stores_df = stores_df.dropna(thresh=4)
+        stores_df = stores_df.drop(stores_df[stores_df['store_code'].str.match('NULL')].index)
+
+        stores_df['opening_date'] = pd.to_datetime(stores_df['opening_date'], format='mixed', errors='coerce')
         stores_df['store_type'] = stores_df['store_type'].fillna('')
-        stores_df['country_code'] = stores_df['country_code'].fillna('')
+        stores_df = stores_df.drop(stores_df[stores_df['country_code'].str.len() > 3].index)
         stores_df['continent'] = stores_df['continent'].fillna('')
 
         return stores_df
 
-    def convert_product_weights(self, products_df):
+    def _convert_product_weights(self, df):
         """Convert all units to kg, assuming 1ml approx equal to 1g.
 
         :param products_df: dataframe for products information
         :return: dataframe with converted weights to kg
         """
+        # Multipack products
+        multipack_regex = r'[0-9]{1,}.?([0-9]{1,})?[mlkgoz]+'
+        multipack_index = df['weight'][~df['weight'].str.match(multipack_regex)].index
+        if len(multipack_index) > 0:
+            df.loc[multipack_index, 'weight'] = df.loc[multipack_index, 'weight'].apply(self.__multipack_to_bulk)
+        else:
+            print('No more multipack products to process')
+        # ml to kilograms
+        ml_index = df['weight'][df['weight'].str.endswith('ml')].index
+        if len(ml_index) > 0:
+            df.loc[ml_index, 'weight'] = df.loc[ml_index, 'weight'].apply(self.__ml_to_kg)
+        else:
+            print('No more liquid products in ml to process')
+        # oz to kilograms
+        oz_index = df['weight'][df['weight'].str.endswith('oz')].index
+        if len(oz_index) > 0:
+            df.loc[oz_index, 'weight'] = df.loc[oz_index, 'weight'].apply(self.__oz_to_kg)
+        else:
+            print('No more products in oz to process')
+        # Grams to kilograms
+        gram_regex = r'^[0-9]*[.]?[0-9]*[^k][g]'
+        gram_index = df['weight'][df['weight'].str.match(gram_regex)].index
+        if len(gram_index) > 0:
+            df.loc[gram_index, 'weight'] = df.loc[gram_index, 'weight'].apply(self.__grams_to_kg)
+        else:
+            print('No more products in grams to process')
+        # Remove kilogram units
+        kg_index = df[df['weight'].apply(lambda x: str(x).endswith('kg'))].index
+        if len(kg_index) > 0:
+            df.loc[kg_index, 'weight'] = df.loc[kg_index, 'weight'].apply(self.__remove_kg_unit)
+        else:
+            print('No more products in kg to process')
 
-        return products_df
+        return df
 
     def clean_products_data(self, df) -> DataFrame:
         """Sanitize products data.
@@ -142,6 +194,7 @@ class DataCleaning:
         df = df.drop(df[~df['product_price'].str.match(price_regex)].index)
         df = df.drop(df[df['product_price'].isna()].index)
         df = df.drop(df[df['weight'].isna()].index)
+        df = self._convert_product_weights(df)
         df['category'] = df['category'].fillna('')
         df['EAN'] = df['EAN'].fillna('')
         df['date_added'] = pd.to_datetime(df['date_added'], errors='coerce')
@@ -149,6 +202,41 @@ class DataCleaning:
         df['product_code'] = df['product_code'].fillna('')
 
         return df
+
+    @staticmethod
+    def __multipack_to_bulk(pack):
+        n, amount = pack.split(' x ')
+        numeric_amount = ''
+        unit_measure = ''
+        for c in amount:
+            if c.isdigit():
+                numeric_amount += c
+            if c.isalpha():
+                unit_measure += c
+                if len(unit_measure) == 2:
+                    break
+        total = round(float(n) * float(numeric_amount))
+        return str(total) + unit_measure
+
+    @staticmethod
+    def __grams_to_kg(grams: str):
+        amount = grams.split('g')[0]
+        return str(round(float(amount)/1000, 3))
+
+    @staticmethod
+    def __ml_to_kg(ml: str):
+        amount = ml.split('ml')[0]
+        return str(round(float(amount)/1000, 3))
+
+    @staticmethod
+    def __oz_to_kg(oz: str):
+        amount = oz.split('oz')[0]
+        return str(round(float(amount)*455/16000, 3))
+
+    @staticmethod
+    def __remove_kg_unit(kg: str):
+        amount = kg.split('kg')[0]
+        return amount
 
     def clean_orders_data(self, df) -> DataFrame:
         """Sanitize orders data.

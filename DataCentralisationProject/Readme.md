@@ -36,7 +36,7 @@
 #### Orders Data
 - Extracted from: orders table from an AWS RDS instance
 - Cleaning: 
-- Uploaded to: table named `dim_orders` in the central database.
+- Uploaded to: table named `orders_table` in the central database.
 
 #### Sales Transaction Data
 - Extracted from: JSON resource uri

@@ -28,14 +28,17 @@ class DataExtractor:
         a pdf file stored in AWS S3 bucket."""
         try:
             dfs = tabula.read_pdf(pdf_file, pages=pages)
-        except FileNotFoundError:
+        except FileNotFoundError as e:            
             logger.error(f'File is not accessible at the link: {pdf_file}')
-        except ValueError:
+            raise e
+        except ValueError as e:
             logger.error(f'Invalid file format: {pdf_file}')
+            raise e
         except Exception as e:
             logger.error(e)
+            raise e
         else:
-            return dfs[0]
+            return pd.concat(dfs)
 
     @staticmethod
     def list_number_of_stores(header_details, endpoint):
