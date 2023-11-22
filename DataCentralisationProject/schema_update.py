@@ -1,6 +1,10 @@
 from sqlalchemy import text
+import logging
+import argparse
 
 from database_utils import DatabaseConnector
+
+logger = logging.getLogger(__name__)
 
 
 class DbSchemaUpdater:
@@ -129,6 +133,7 @@ def alter_orders_table(dsu: DbSchemaUpdater):
     :param dsu: DbSchemaUpdater
     """
     TABLE_NAME = 'orders_table'
+    logger.debug(f'Altering {TABLE_NAME}')
     # Convert date and user columns to UUIDs
     dsu._convert_to_uuid(TABLE_NAME, 'date_uuid')
     dsu._convert_to_uuid(TABLE_NAME, 'user_uuid')
@@ -159,6 +164,7 @@ def alter_users_table(dsu: DbSchemaUpdater):
     :param dsu: DbSchemaUpdater
     """
     TABLE_NAME = 'dim_users'
+    logger.debug(f'Altering {TABLE_NAME}')
     dsu._convert_to_varchar(TABLE_NAME, 'first_name', 255)
     dsu._convert_to_varchar(TABLE_NAME, 'last_name', 255)
     dsu.convert_to_date(TABLE_NAME, 'date_of_birth')
@@ -186,6 +192,7 @@ def alter_stores_table(dsu: DbSchemaUpdater):
     :param dsu: DbSchemaUpdater
     """
     TABLE_NAME = 'dim_stores_data'
+    logger.debug(f'Altering {TABLE_NAME}')
     dsu._convert_to_float(TABLE_NAME, 'longitude')
     # Merge latitude and lat into latitude, drop lat
     with dsu.engine.connect() as conn:
@@ -225,6 +232,7 @@ def alter_products_table(dsu: DbSchemaUpdater):
         conn.execute(text("UPDATE dim_products SET product_price = TRIM('£' FROM product_price);"))
         conn.commit()
     TABLE_NAME = 'dim_products'
+    logger.debug(f'Altering {TABLE_NAME}')
     # Convert weight to float
     dsu._convert_to_float(TABLE_NAME, 'weight')
     # Add new column `weight_class`
@@ -267,6 +275,7 @@ def alter_sales_date_times_table(dsu: DbSchemaUpdater):
     :param dsu: DbSchemaUpdater
     """
     TABLE_NAME = 'dim_date_times'
+    logger.debug(f'Altering {TABLE_NAME}')
     dsu._convert_to_varchar(TABLE_NAME, 'month', max_data_length=True)
     dsu._convert_to_varchar(TABLE_NAME, 'year', max_data_length=True)
     dsu._convert_to_varchar(TABLE_NAME, 'day', max_data_length=True)
@@ -287,6 +296,7 @@ def alter_card_details_table(dsu: DbSchemaUpdater):
     :param dsu: DbSchemaUpdater
     """
     TABLE_NAME = 'dim_card_details'
+    logger.debug(f'Altering {TABLE_NAME}')
     dsu._convert_to_varchar(TABLE_NAME, 'card_number', max_data_length=True)
     dsu._convert_to_varchar(TABLE_NAME, 'expiry_date', max_data_length=True)
     dsu.convert_to_date(TABLE_NAME, 'date_payment_confirmed', casting=True)
@@ -304,6 +314,7 @@ def set_primary_keys_dim_tables(dsu: DbSchemaUpdater):
 
     :param dsu: DbSchemaUpdater
     """
+    logger.debug('Setting Primary Keys in Dimensions Table')
     dsu.set_primary_key('dim_date_times', 'date_uuid')
     dsu.set_primary_key('dim_users', 'user_uuid')
     dsu.set_primary_key('dim_stores_data', 'store_code')
@@ -324,6 +335,7 @@ def set_foreign_keys_orders_table(dsu: DbSchemaUpdater):
     :param dsu: _description_
     """
     CENTRAL_TABLE = 'orders_table'
+    logger.debug(f'Setting Foreign Keys (FK) in Central Table `{CENTRAL_TABLE}`')
     dsu.add_foreign_key_constraint(CENTRAL_TABLE, 'date_uuid', 'dim_date_times', 'date_uuid')
     dsu.add_foreign_key_constraint(CENTRAL_TABLE, 'user_uuid', 'dim_users', 'user_uuid')
     dsu.add_foreign_key_constraint(CENTRAL_TABLE, 'store_code', 'dim_stores_data', 'store_code')
@@ -332,12 +344,31 @@ def set_foreign_keys_orders_table(dsu: DbSchemaUpdater):
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='''Choose steps to execute and logging 
+                                                    level during star-schema creation.''')
+
+    parser.add_argument('-a', '--alter', action='store_true', help='Alter dimensions table schemas.')
+    parser.add_argument('-pk', '--set-pk', action='store_true', help='Set primary keys on dimensions tables.')
+    parser.add_argument('-fk', '--set-fk', action='store_true', help='Set foreign key constraint on central table.')
+    parser.add_argument('-d', '--debug-log', action='store_true')
+
+    args = parser.parse_args()
+
+    if not any((args.alter, args.set_pk, args.set_fk)):
+        parser.print_help()
+        exit(0)
+
+    logger.setLevel(logging.DEBUG)
+
     dsu = DbSchemaUpdater('db_creds_central.yaml')
-    alter_orders_table(dsu)
-    alter_users_table(dsu)
-    alter_stores_table(dsu)
-    alter_products_table(dsu)
-    alter_sales_date_times_table(dsu)
-    alter_card_details_table(dsu)
-    set_primary_keys_dim_tables(dsu)
-    set_foreign_keys_orders_table(dsu)
+    if args.alter:
+        alter_orders_table(dsu)
+        alter_users_table(dsu)
+        alter_stores_table(dsu)
+        alter_products_table(dsu)
+        alter_sales_date_times_table(dsu)
+        alter_card_details_table(dsu)
+    if args.set_pk:
+        set_primary_keys_dim_tables(dsu)
+    if args.set_fk:
+        set_foreign_keys_orders_table(dsu)
