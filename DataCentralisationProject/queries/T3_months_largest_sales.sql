@@ -13,7 +13,7 @@
 -- +-------------+-------+
 
 SELECT 
-    ROUND(SUM(product_quantity * product_price)::numeric, 2) AS total_sales, month,
+    ROUND(SUM(product_quantity * product_price)::numeric, 2) AS total_sales, month
 FROM 
     dim_date_times
 INNER JOIN
