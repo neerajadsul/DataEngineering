@@ -132,10 +132,11 @@ class DataCleaning:
         stores_df['locality'] = stores_df['locality'].fillna("N/A")
         stores_df = stores_df.dropna(subset=['store_code'])
         stores_df = stores_df.dropna(thresh=4)
-        
+        stores_df = stores_df.drop(stores_df[stores_df['store_code'].str.match('NULL')].index)
+
         stores_df['opening_date'] = pd.to_datetime(stores_df['opening_date'], format='mixed', errors='coerce')
         stores_df['store_type'] = stores_df['store_type'].fillna('')
-        stores_df['country_code'] = stores_df['country_code'].fillna('')
+        stores_df = stores_df.drop(stores_df[stores_df['country_code'].str.len() > 3].index)
         stores_df['continent'] = stores_df['continent'].fillna('')
 
         return stores_df
