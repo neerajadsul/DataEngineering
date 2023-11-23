@@ -46,6 +46,16 @@ Following schematic shows an overview of data sources going through a processing
 1. Validate payment date using regex and set NaN when fails.
 
 #### Retail Stores Data Cleaning
+1. Invalid staff numbers set to 0.
+2. Invalid addresses with length shorter than 3, rows removed.
+3. Validate latitude with regex and set to NaN when fails.
+3. Validate longitude with regex and set to NaN when fails.
+4. Set locality to 'N/A' where empty or null.
+5. Drop rows where store code is invalid.
+1. Convert opening date to date/time format and set to NaN when fails.
+2. Set store type to blank when empty or invalid.
+3. Drop rows where country code is invalid.
+4. Set continent to empty where empty or null.
 
 #### Product Details Data Cleaning
 
