@@ -39,7 +39,7 @@ Following schematic shows an overview of data sources going through a processing
 1. Validate phone number with a regex and set blank when fails.
 
 #### Payment Cards Data Cleaning
-1. Drop rows with null values.
+1. Remove rows with null values.
 1. Clean card numbers by removing non-digit characters.
 1. Validate card numbers using regex and set NaN when fails.
 1. Validate expiry date using regex and set NaN when fails.
@@ -51,14 +51,22 @@ Following schematic shows an overview of data sources going through a processing
 3. Validate latitude with regex and set to NaN when fails.
 3. Validate longitude with regex and set to NaN when fails.
 4. Set locality to 'N/A' where empty or null.
-5. Drop rows where store code is invalid.
+5. Remove rows where store code is invalid.
 1. Convert opening date to date/time format and set to NaN when fails.
 2. Set store type to blank when empty or invalid.
-3. Drop rows where country code is invalid.
+3. Remove rows where country code is invalid.
 4. Set continent to empty where empty or null.
 
 #### Product Details Data Cleaning
-
+1. Remove rows where product name is null or empty.
+2. Remove rows where product price does not match the regex or null or, empty.
+1. Remove rows where product weight is null or empty.
+1. Convert product all unit weights to kilograms for simplicity.
+   1. Find multi-pack type products such as '8 x 200g', convert them to single bulk weight.
+   2. Convert ml to kg.
+   3. Convert oz to kg.
+   4. Convert grams to kg.
+   5. Since all are in kg now, remove the unit postfix.
 #### Orders Data Cleaning
 
 #### Sales Transaction Data Cleaning
