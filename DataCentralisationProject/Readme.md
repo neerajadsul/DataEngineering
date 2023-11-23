@@ -39,10 +39,15 @@ Following schematic shows an overview of data sources going through a processing
 
 #### Orders Data Cleaning
 
-#### Sales Transaction Data
-- Extracted from: JSON resource uri
-- Cleaning: 
-- Uploaded to: table named `dim_date_times` in the central database.
+#### Sales Transaction Data Cleaning
+
+![](_docs/design_workflow.png)
+
+### Database Star Schema Implementation
+
+![](_docs/StarSchema-DataCentral.png)
+
+### 
 
 ## Installation Instructions
 
