@@ -12,10 +12,12 @@ In the second stage, this clean data is loaded into the central database tables.
 Finally, analytical queries are created to generate business insights based on the requirements of the sales team.
 
 ## High-Level Design
+Following schematic shows an overview of data sources going through a processing pipeline which generates corresponding tables in the central database.
 
+![](_docs/data_processing_pipeline.png)
 
 ## Detailed Design
-### Data Centralisation Workflow
+### Data Processing Workflow
 
 
 | Data Category | Source | Table in Central DB |
