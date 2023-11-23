@@ -3,3 +3,7 @@ cleaning_experiments.ipynb
 
 #VSCode
 .[vV][sS][cC]ode
+
+# Draw.io temporary
+*.drawio.bkp
+

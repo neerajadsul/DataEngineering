@@ -55,7 +55,7 @@ def get_report(metrics='all'):
 def export_analytics_report(results: dict):
     """Write query results in a markdown file."""
 
-    with open('metrics_analytics.md', 'w') as f:
+    with open('report_metrics_analytics.md', 'w') as f:
         print('# Analytics Report')
         for rkey, rval in results.items():
             print('## Query: ', rkey, file=f)
