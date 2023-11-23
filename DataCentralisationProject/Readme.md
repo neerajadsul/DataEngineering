@@ -15,32 +15,27 @@ Finally, analytical queries are created to generate business insights based on t
 
 
 ## Detailed Design
+### Data Centralisation Workflow
 
-### Centralisation Workflow
-#### Users Data
-- Extracted from: an AWS RDS instance,
-- Cleaning:  
-- Uploaded to: table named `dim_users` in the central database.
 
-#### Payment Cards Data
-- Extracted from: a pdf file in blob storage on AWS
-- Cleaning: 
-- Uploaded to: table named `dim_card_details` in the central database.
+| Data Category | Source | Table in Central DB |
+|---------------|--------|---------------------|
+| Users/Customers | AWS RDS PostgreSQL | `dim_users` |
+| Payments Cards | PDF in S3 bucket | `dim_card_details` |
+| Retail Stores | REST API Endpoint | `dim_stores_data` |
+| Products Catalogue | CSV file in S3 bucket | `dim_products` |
+| Orders Details | AWS RDS PostgreSQL | `orders_table` |
+| Sales Transactions | JSON resouce URI | `dim_date_times` |
 
-#### Retail Stores Data
-- Extracted from: REST API endpoints
-- Cleaning: 
-- Uploaded to: table named `dim_stores_data` in the central database.
+#### Users Data Cleaning
 
-#### Product Details Data
-- Extracted from: a CSV file in a S3 bucket
-- Cleaning: 
-- Uploaded to: table named `dim_products` in the central database.
+#### Payment Cards Data Cleaning
 
-#### Orders Data
-- Extracted from: orders table from an AWS RDS instance
-- Cleaning: 
-- Uploaded to: table named `orders_table` in the central database.
+#### Retail Stores Data Cleaning
+
+#### Product Details Data Cleaning
+
+#### Orders Data Cleaning
 
 #### Sales Transaction Data
 - Extracted from: JSON resource uri
