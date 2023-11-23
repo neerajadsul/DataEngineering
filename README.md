@@ -9,6 +9,9 @@ Sales data spread across several sources makes it difficult to analyse and make 
 Goal of this work is to consolidate data to a centralised location preparing a single source of truth
 for business insights, experiments and formulating evidence based strategy.
 
+<img src="DataCentralisationProject/_docs/data_processing_pipeline.png" width="200" style="text-align=center;">
+
+
 ### Practicals
 1. [Advanced SQL](./AdvancedSQL/)
 Complex queries to examine cross-relations, analysing data and performing calculations.
