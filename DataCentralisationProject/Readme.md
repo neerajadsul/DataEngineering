@@ -17,7 +17,7 @@ Following schematic shows an overview of data sources going through a processing
 ![Overview of Data Sources, Processing and Resulting Tables](_docs/data_processing_pipeline.png)
 
 ## Detailed Design
-### Data Processing Workflow
+### Extraction, Cleaning and Consolidation
 
 
 | Data Category      | Source                | Table in Central DB |
@@ -68,16 +68,37 @@ Following schematic shows an overview of data sources going through a processing
    4. Convert grams to kg.
    5. Since all are in kg now, remove the unit postfix.
 #### Orders Data Cleaning
-
+1. Remove specified columns: '1', 'first_name', 'last_name'
 #### Sales Transaction Data Cleaning
+1. Remove rows with invalid months, valid [1-12].
+1. Remove rows with invalid year, valid 4 digit.
+1. Remove rows with invalid day, valid [1-31].
+1. Remove rows with invalid timestamps.
+1. Remove rows with invalid date UUID format.
 
-![](_docs/design_workflow.png)
+### Data Processing Workflow
+Following figure shows step-by-step flow of data and operations in the data processing pipeline.
+
+![](_docs/data_processing_workflow.png)
 
 ### Database Star Schema Implementation
+Following figure shows steps to implement the star schema with `orders_data` table as the central table around other dimension tables from section above [Data Tables](#extraction-cleaning-and-consolidation)
+
+![](_docs/schema_update_workflow.png)
+
+An entiry relationship diagram (ERD) of the schema is shown below:
 
 ![](_docs/StarSchema-DataCentral.png)
 
-### 
+### Analytics Queries
+- All the queries according to the specifications are store in a sub-directory `/queries` at the root of the source. 
+- These queries are prefixed with requirement as `T#_{keywords_with_underscore}.sql`. For example 7th requirements is in query file `T7_headcount_country.sql`
+- All queries are run in sequence using `analytics.py` script.
+- It exports the outcome of all queries as a report in a Markdown format.
+
+Following figure shows an overview of the steps performing analytics.
+
+![](_docs/analytics_workflow.png)
 
 ## Installation Instructions
 
