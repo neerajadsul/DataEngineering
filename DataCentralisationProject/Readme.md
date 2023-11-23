@@ -86,7 +86,7 @@ Following figure shows steps to implement the star schema with `orders_data` tab
 
 ![](_docs/schema_update_workflow.png)
 
-An entiry relationship diagram (ERD) of the schema is shown below:
+An entity relationship diagram (ERD) of the schema is shown below:
 
 ![](_docs/StarSchema-DataCentral.png)
 
@@ -101,7 +101,49 @@ Following figure shows an overview of the steps performing analytics.
 ![](_docs/analytics_workflow.png)
 
 ## Installation Instructions
+We use `poetry` to manage environments. Please make sure to have it installed.
+You can refer to instructions at: https://python-poetry.org/docs/#installation
+
+1. Clone the repository and change directory to `DataCentralisationProject`
+2. Run command `poetry install` to create production environment.
+3. Please obtain and save database credentials required in the root of project directory.
+4. The data extraction from pdf requires Java runtime environment, please make sure that you have `JAVA_HOME` set correctly and `java` command is available.
+
+Now you are ready to proceed.
 
 ## Usage Instructions
 
+### Basic/First - ETL followed by Analytics Workflow
+1. Run command `python workflow.py` to execute data retrieval, extraction and cleaning pipeline. This would have created dimension tables and central table in the central database.
+2. Run command `python schema_update.py` to setup central database star schema. This would set primary keys in dimension tables and foreign key relations for those in central table.
+3. Run command `python analytics.py` to perform all analytics queries from `/queries` directory. It will export the report with outcomes from all queries as `report_metrics_analytics.md`.
+
+### Analytics Only
+- **Individual Queries**:
+Please choose any query file from `/queries` directory and run the query using `SQLTools` in VSCode or `Pgadmin4` utility for PostgreSQL.
+
+- **Add new query**:
+Create a query file in the format specified in [Analytics Queries](#analytics-queries) duly incrementing the requirement number.
+
+- **All Queries** : Use step 3 from above full workflow.
+
 ## Lessons Learnt
+
+1. Data sanitization is essential as real world data may contain lots of errors, it may be missing part of the data or invalid. Else data consolidation will be challenging when the setting up schema and relationships. Because unclean data causes errors which are hard to resolve as significant backtracking is required. 
+
+For example, if a reference is not found in the dimension table while setting up foreign key relation, we need to backtrack why that datapoint is absent and rework the filtering process.
+
+2. Knowing database schema design in advanced will be extremely helpful to understand importance of fields in the raw data. This can be used to prioritized data sanitization process. 
+
+For example, knowing which columns are primary keys for table, we can first remove the datapoints with erroneous values for it.  
+
+3. Encapsulation of data and functionality helps to make code much more clean secure, and highly reusable.
+
+For example, refactoring the `DatabaseConnector` class by directly initialising the database engine with credentials. This removed holding the credentials file information, the user only has to call connect method without knowing how, and the same API can be used across the entire codebase.
+
+
+## Possible Features / Enhancements
+1. A web interface for the entire workflow pipeline.
+2. Deploy to a VPS or Cloud using SQLite as central DB.
+3. Replicate the workflow using MySQL/MariaDB for central server.
+4. Improve data sanitization code by reuse.
