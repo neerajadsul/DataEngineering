@@ -168,6 +168,9 @@ cython_debug/
 # Database Credentials file
 *db_creds*.yaml
 
+# VSCode
+**/*.vscode
+
 
 # Identity / Secret Key files
 **/*.pem
