@@ -5,7 +5,7 @@ Pinterest performsn daily experiments on historical and daily acquired data to c
 
 `user_posting_emulation.py` script connects to a RDS database containing data resembling Pinterest API with a POST request. 
 
-[cols=",3"]
+[cols="1,3"]
 |===
 | Table Name | Columns
 | `pinterest_data` | `['index', 'unique_id', 'title', 'description', 'poster_name', 'follower_count', 'tag_list', 'is_image_or_video', 'image_src', 'downloaded', 'save_location', 'category']`
