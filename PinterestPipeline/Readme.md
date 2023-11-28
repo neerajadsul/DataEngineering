@@ -13,6 +13,11 @@ Pinterest performsn daily experiments on historical and daily acquired data to c
 
 
 ## Configuration
+### SSH Login to EC2 Instance
+1. Save identity file `*.pem` locally using secret for SSH connection in Parameter Store in AWS Account.
+2. Using public IP, `ec2-user` and identity file above connect via SSH with 
+   `ssh -i <identity file> ec2-user@<EC2 instance public IP>`
+
 ### Kafka EC2 Instance
 1. Login to EC2 Shell via SSH
 2. Install Java 11
