@@ -28,4 +28,22 @@ Pinterest performsn daily experiments on historical and daily acquired data to c
    1. Add EC2 Access Role ARN to trust relationship in IAM Roles as a principal.
    2. Update `client.properties` in EC2 Kafka instance configuring bootstrap server.
 
-
+### Connect Kafka to MSK Cluster
+1. Copy Kafka connector to your users S3 bucket under `kafka-connect-s3`.
+2. Create custom plugin using MSK Connect console with name `<userID>-plugin`.
+3. Create MSK Connector with name `<userID>-connector` using following configuration:
+   ```
+   connector.class=io.confluent.connect.s3.S3SinkConnector
+   s3.region=us-east-1
+   flush.size=1
+   schema.compatibility=NONE
+   tasks.max=3
+   topics.regex=<YOUR_UUID>.*
+   format.class=io.confluent.connect.s3.format.json.JsonFormat
+   partitioner.class=io.confluent.connect.storage.partitioner.DefaultPartitioner
+   value.converter.schemas.enable=false
+   value.converter=org.apache.kafka.connect.json.JsonConverter
+   storage.class=io.confluent.connect.s3.storage.S3Storage
+   key.converter=org.apache.kafka.connect.storage.StringConverter
+   s3.bucket.name=<BUCKET_NAME>
+   ```
