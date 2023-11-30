@@ -47,3 +47,15 @@ Pinterest performsn daily experiments on historical and daily acquired data to c
    key.converter=org.apache.kafka.connect.storage.StringConverter
    s3.bucket.name=<BUCKET_NAME>
    ```
+
+### Kafka REST Proxy Integration for API
+1. Create AWS API with `{proxy+}` endpoint and HTTP Proxy `ANY` method.
+2. Deploy the API using AWS Old Console Interface and note down public invoke URL.
+3. On EC2 Kafka instance, setup Confluent Kafka-Rest Proxy Client
+   1. Download and extarct Confluent
+   2. Donwnload `aws-msk-iam-auth` Java class libray and place it inside Kafka `libs`
+   3. Add the library to Java `$CLASSPATH` environment variable.\
+      IMPORTANT: **Make sure to set `CLASSPATH` and run `kafka-rest` with same user either `root` or `ec2-user`.**
+   4. Run Kafka rest server and send JSON data via POST request.
+
+When user sends the request via public API gateway, the API then calls the backend service running on our EC2 instance. This results connection to MSK Cluster and data is stored to the designated S3 bucket.
