@@ -64,3 +64,14 @@ Following figure shows a high-level overview of the pipeline:
    4. Run Kafka rest server and send JSON data via POST request.
 
 When user sends the request via public API gateway, the API then calls the backend service running on our EC2 instance. This results connection to MSK Cluster and data is stored to the designated S3 bucket.
+
+### Databricks Setup with S3
+We use datalakes in Databricks for processing the pinterests posts data.
+
+1. Connect S3 bucket to Databricks using credentials CSV file. 
+   - *Note: For this project creation of credentials and uploading to databricks is already done.*
+2. Mount S3 bucket in databricks using notebook and credentials CSV file.
+3. Prepare paths for each of the `pin`, `geo`, and `user` JSON data files.
+4. Load these datasets into dataframes `df_pin`, `df_geo` and `df_user`.
+   - Notebook for the process is `PinterestPipeline/0a1d8948160f_PinterestDataPipeline.ipynb`
+
