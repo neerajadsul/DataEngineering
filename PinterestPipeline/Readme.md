@@ -1,6 +1,11 @@
 # Pinterest Data Pipeline
 Pinterest performsn daily experiments on historical and daily acquired data to create more value for the customers. Goal of this project is to replicate the workflow using AWS Cloud infrastrcture.
 
+Following figure shows a high-level overview of the pipeline:
+
+
+<img src="_docs/pinterest_pipeline.png" width="520" style="text-align=center;">
+
 ## Emulating User Posts
 
 `user_posting_emulation.py` script connects to a RDS database containing data resembling Pinterest API with a POST request. 
