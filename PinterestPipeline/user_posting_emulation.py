@@ -1,16 +1,19 @@
 import requests
 from time import sleep
 import random
-from multiprocessing import Process
-import boto3
 import json
 import sqlalchemy
 from sqlalchemy import text
 from pprint import pprint
 import argparse
 import yaml
+import logging
+from pathlib import Path
+
 
 random.seed(100)
+logger = logging.getLogger(__name__)
+root_dir = Path(__file__).resolve().parents[0]
 
 
 def print_keys(d):
@@ -21,7 +24,7 @@ def print_keys(d):
 
 class AWSDBConnector:
     def __init__(self):
-        with open('db_creds_pinterest.yaml') as f:
+        with open(root_dir / 'db_creds_pinterest.yaml') as f:
             creds = yaml.safe_load(f)
         self.HOST = creds['HOST']
         self.USER = creds['USER']
@@ -36,10 +39,47 @@ class AWSDBConnector:
         return engine
 
 
-new_connector = AWSDBConnector()
+def send_data_kafka_processing(data, topic):
+    INVOKE_ENDPOINT = ' https://y62ln2mwxb.execute-api.us-east-1.amazonaws.com/test/topics/'
+    TOPIC_ARG = f'0a1d8948160f.{topic}'
+
+    headers = {'Content-Type': 'application/vnd.kafka.json.v2+json'}
+
+    response = requests.request(
+        method='POST',
+        url=INVOKE_ENDPOINT + TOPIC_ARG,
+        data=data,
+        headers=headers,
+    )
+    response = requests.get(INVOKE_ENDPOINT)
+
+    return response
+
+
+def process_payload_json(data):
+
+    if 'timestamp' in data:
+        data['timestamp'] = data['timestamp'].isoformat()
+
+    if 'date_joined' in data:
+        data['date_joined'] = data['date_joined'].isoformat()
+
+    payload = json.dumps({
+        "records": [
+            {
+                "value": data
+            }
+        ]
+    })
+    return payload
 
 
 def run_infinite_post_data_loop(num_posts=-1):
+    """_summary_
+
+    :param num_posts: _description_, defaults to -1
+    """
+    new_connector = AWSDBConnector()
     while num_posts > 0:
         sleep(random.randrange(0, 2))
         random_row = random.randint(0, 11000)
@@ -64,26 +104,32 @@ def run_infinite_post_data_loop(num_posts=-1):
             for row in user_selected_row:
                 user_result = dict(row._mapping)
 
-            # print_keys(pin_result)
-            # print_keys(geo_result)
-            # print_keys(user_result)
-
-            # pprint(pin_result.keys())
-            # pprint(geo_result.keys())
-            # pprint(user_result.keys())
-
-            pprint(pin_result)
-            pprint(geo_result)
-            pprint(user_result)
+            for topic, result in zip(['pin', 'geo', 'user'], [pin_result, geo_result, user_result]):
+                # pprint(result)
+                data = process_payload_json(result)
+                pprint(data)
+                response = send_data_kafka_processing(data, topic)
 
             num_posts -= 1
+            if response.status_code == 200:
+                logger.info(response.content)
+            else:
+                logger.error(response.content)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('Retrieve given number of posts')
     parser.add_argument('-n', default=10000, type=int, help='number of posts, default 10000')
+    parser.add_argument('-log', default='d', type=str, help='Logging level: d, i, e')
 
     args = parser.parse_args()
 
+    if len(args._get_args()) < 2:
+        args.n = 1
+        args.log = 'd'
+
+    log_levels = {'d': logging.DEBUG, 'i': logging.INFO, 'e': logging.ERROR}
+
+    logger.setLevel(log_levels[args.log])
+
     run_infinite_post_data_loop(num_posts=args.n)
-    print('Working')
