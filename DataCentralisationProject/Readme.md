@@ -1,5 +1,27 @@
 # Multinational Retail Data Centralisation
 
+- [Multinational Retail Data Centralisation](#multinational-retail-data-centralisation)
+  - [Business Objective:](#business-objective)
+  - [Summary](#summary)
+  - [High-Level Design](#high-level-design)
+  - [Detailed Design](#detailed-design)
+    - [Extraction, Cleaning and Consolidation](#extraction-cleaning-and-consolidation)
+      - [Users Data Cleaning](#users-data-cleaning)
+      - [Payment Cards Data Cleaning](#payment-cards-data-cleaning)
+      - [Retail Stores Data Cleaning](#retail-stores-data-cleaning)
+      - [Product Details Data Cleaning](#product-details-data-cleaning)
+      - [Orders Data Cleaning](#orders-data-cleaning)
+      - [Sales Transaction Data Cleaning](#sales-transaction-data-cleaning)
+    - [Data Processing Workflow](#data-processing-workflow)
+    - [Database Star Schema Implementation](#database-star-schema-implementation)
+    - [Analytics Queries](#analytics-queries)
+  - [Installation Instructions](#installation-instructions)
+  - [Usage Instructions](#usage-instructions)
+    - [Basic/First - ETL followed by Analytics Workflow](#basicfirst---etl-followed-by-analytics-workflow)
+    - [Analytics Only](#analytics-only)
+  - [Lessons Learnt](#lessons-learnt)
+  - [Possible Features / Enhancements](#possible-features--enhancements)
+
 ## Business Objective:
 Retail sales data for the company is spread across variety of data sources. The goal of this work is to consolidate, make it easily accessible, and being able to perform analytics. 
 This will help the business to make informed policy decisions, understand strengths and weaknesses, and stay competitive.
