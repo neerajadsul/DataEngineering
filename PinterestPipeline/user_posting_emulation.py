@@ -9,9 +9,10 @@ import argparse
 import yaml
 import logging
 from pathlib import Path
+import sys
 
 
-random.seed(100)
+# random.seed(100)
 logger = logging.getLogger(__name__)
 root_dir = Path(__file__).resolve().parents[0]
 
@@ -124,12 +125,13 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    if len(args._get_args()) < 2:
+    if len(sys.argv) < 2:
         args.n = 1
         args.log = 'd'
 
     log_levels = {'d': logging.DEBUG, 'i': logging.INFO, 'e': logging.ERROR}
 
     logger.setLevel(log_levels[args.log])
+    print(args.n, args.log)
 
     run_infinite_post_data_loop(num_posts=args.n)
