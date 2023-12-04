@@ -1,0 +1,20 @@
+[tool.ruff]
+# Configuration for ruff linter
+line-length = 120
+[tool.ruff.format]
+# Configuration for ruff auto-formatter
+# Prefer single quotes over double quotes.
+quote-style = "single"
+
+[tool.flake8]
+# Configurations for flake8 linter
+max-line-length=120
+[tool.poetry]
+name = "pinterestdatapipeline"
+version = "0.1.0"
+description = "Pinterest Data Pipeline."
+authors = ["Neeraj Adsul"]
+license = "Apache-2.0"
+readme = "README.md"
+
+
