@@ -61,7 +61,9 @@ Following figure shows a high-level overview of the pipeline:
    2. Donwnload `aws-msk-iam-auth` Java class libray and place it inside Kafka `libs`
    3. Add the library to Java `$CLASSPATH` environment variable.\
       IMPORTANT: **Make sure to set `CLASSPATH` and run `kafka-rest` with same user either `root` or `ec2-user`.**
-   4. Run Kafka rest server and send JSON data via POST request.
+   4. Run Kafka rest server and send JSON data via POST request using following:
+      `./kafka-rest-start /home/ec2-user/confluent-7.2.0/etc/kafka-rest/kafka-rest.properties`
+      Run this with sudo if `CLASSPATH` is set as `root`.
 
 When user sends the request via public API gateway, the API then calls the backend service running on our EC2 instance. This results connection to MSK Cluster and data is stored to the designated S3 bucket.
 
