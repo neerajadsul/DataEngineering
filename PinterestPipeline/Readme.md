@@ -77,3 +77,23 @@ We use datalakes in Databricks for processing the pinterests posts data.
 4. Load these datasets into dataframes `df_pin`, `df_geo` and `df_user`.
    - Notebook for the process is `PinterestPipeline/0a1d8948160f_PinterestDataPipeline.ipynb`
 
+## Databricks Apache Spark Reporting Pipeline
+Databricks provides a pre-configured Apache Spark environment in Notebook format.
+It supports automatic state persistence which can always resume where you left off.
+This avoids rerunning any previous ETL/ELT steps.
+
+For this data pipeline, we first clean the three datasets loaded in `df_pin`, `df_geo` and `df_user`.
+
+### Cleaning `df_pin`
+1. Filter `unique_id` column which contain uuid lenght 36.
+2. Clean and transform `follower_count`:
+   1. First, we filter the rows which match the valid follower count regex `r'[0-9]{1,}[kM]?'`.
+   2. Then we transform the follower count in `k` to thousands and `M` to millions, making all values integer format.
+3. Rename `index` column to `ind`.
+4. Reorder the columns in the dataframe as: `'ind', 'unique_id', 'title', 'description', 'follower_count', 'poster_name',
+                   'tag_list', 'is_image_or_video', 'image_src', 'save_location', 'category'`
+5. Finally, we replace empty and not-applicable cells with None followed by dropping duplicate rows.
+
+### Cleaning `df_geo`
+
+### Cleaning `df_user`
