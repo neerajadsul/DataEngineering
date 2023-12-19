@@ -95,5 +95,13 @@ For this data pipeline, we first clean the three datasets loaded in `df_pin`, `d
 5. Finally, we replace empty and not-applicable cells with None followed by dropping duplicate rows.
 
 ### Cleaning `df_geo`
+1. Create a new column `coordinates` as an array of `longitude` and `latitude` followed by dropping the contituent columns.
+2. Convert `timestamp` in string to timestamp format.
+3. Reorder the columns of the dataframe in the following order: `'ind', 'country', 'coordinates', 'timestamp'`
 
 ### Cleaning `df_user`
+
+1. Create a new column `user_name` by concatenating `first_name` and `last_name` followed by dropping the contituent columns.
+2. Convert `date_joined` in string to timestamp format.
+3. Reorder the columns of the dataframe in the following order: `'ind', 'user_name', 'age', 'date_joined'`.
+
