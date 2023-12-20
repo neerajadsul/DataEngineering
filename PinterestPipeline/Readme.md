@@ -82,9 +82,10 @@ Databricks provides a pre-configured Apache Spark environment in Notebook format
 It supports automatic state persistence which can always resume where you left off.
 This avoids rerunning any previous ETL/ELT steps.
 
+### Data Cleaning
 For this data pipeline, we first clean the three datasets loaded in `df_pin`, `df_geo` and `df_user`.
 
-### Cleaning `df_pin`
+#### Cleaning `df_pin`
 1. Filter `unique_id` column which contain uuid lenght 36.
 2. Clean and transform `follower_count`:
    1. First, we filter the rows which match the valid follower count regex `r'[0-9]{1,}[kM]?'`.
@@ -94,14 +95,36 @@ For this data pipeline, we first clean the three datasets loaded in `df_pin`, `d
                    'tag_list', 'is_image_or_video', 'image_src', 'save_location', 'category'`
 5. Finally, we replace empty and not-applicable cells with None followed by dropping duplicate rows.
 
-### Cleaning `df_geo`
+#### Cleaning `df_geo`
 1. Create a new column `coordinates` as an array of `longitude` and `latitude` followed by dropping the contituent columns.
 2. Convert `timestamp` in string to timestamp format.
 3. Reorder the columns of the dataframe in the following order: `'ind', 'country', 'coordinates', 'timestamp'`
 
-### Cleaning `df_user`
+#### Cleaning `df_user`
 
 1. Create a new column `user_name` by concatenating `first_name` and `last_name` followed by dropping the contituent columns.
 2. Convert `date_joined` in string to timestamp format.
 3. Reorder the columns of the dataframe in the following order: `'ind', 'user_name', 'age', 'date_joined'`.
 
+### Analytics Queries
+
+All the required analytics queries are written in the Databricks notebook using PySpark SQL API. Pandas API on PySpark is not as well supported as doing the analysis directly in Pandas.
+
+Few key observations on Databricks PySpark SQL API:
+- Syntactically, it is organised as functional programming technique.
+- Operations can be chained as in functional paradigm where output of one function becomes input of next and so on.
+- The operations are lazy evaluations: 
+  - The query is prepared and checked which provides the outcome without the data.
+  - It is executed only when the data needs to be evaluated such as exporting or displaying the output.
+- Most commonly used functions on a DataFrame are: `withColumn`, `groupBy`, `agg`, `filter`, `alias` and `orderBy`.
+- `join` is used to combine two dataframes with common key identical to SQL Joins.
+- `display(dataframe)` is used to show the output dataframe in an interactive table format.
+
+### Analysis Dashboard
+Databricks provides a feature to add the output of cells to be placed in a live dashboard. Following figure shows partial dashboard for our pinterest datapipeline.
+
+![](_docs/databricks_dashboard.png)
+
+The dashboard tables or graphs can be updated by running the query.
+The analysis can also be scheduled to run such as every week for each region to check outcome of A/B experiments. It can be used to present analysis to stakeholders.
+In contrast to data warehousing, this approach provides faster development and analysis. As the queries are directly performed on the datastore without additional ETL steps allows rapid iterations of experiments.
