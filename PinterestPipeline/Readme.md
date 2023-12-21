@@ -128,3 +128,17 @@ Databricks provides a feature to add the output of cells to be placed in a live 
 The dashboard tables or graphs can be updated by running the query.
 The analysis can also be scheduled to run such as every week for each region to check outcome of A/B experiments. It can be used to present analysis to stakeholders.
 In contrast to data warehousing, this approach provides faster development and analysis. As the queries are directly performed on the datastore without additional ETL steps allows rapid iterations of experiments.
+
+## Apache Airflow
+Airflow is an orchestrator for data engineeing workflow. A step in the workflow is defined using tasks, these tasks are performed in order defined by the directed acyclic graph (DAG). The DAG is written as a Python script which is then scheduled and executed by the Airflow scheduler.
+Airflow monitor the tasks, save logs of the outcome and also provides a web interface for administration.
+Data can be transferred between the tasks using `XCom` API and airflow `Variables` can be used to set environment information.
+
+Airflow supports connectors for various softwares and services such as PostgreSQL, MongoDB, Databricks, AWS, Azure etc. These are called 'Apache Airflow Providers' which are listed at: [Apache Airflow Providers](https://airflow.apache.org/docs/apache-airflow-providers/packages-ref.html)
+
+
+### AWS MWAA
+AWS provides Managed Workflow for Apache Airflow to simplify the service deployment and orchestration.
+
+
+
