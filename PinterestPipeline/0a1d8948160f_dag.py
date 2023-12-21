@@ -26,7 +26,7 @@ default_args = {
 }
 
 with DAG(
-    dag_id='0a1d8948160f_dag_pinterest',
+    dag_id='0a1d8948160f_dag',
     start_date=datetime(2023, 12, 20, 16),
     schedule_interval='@daily',
     catchup=False,
