@@ -142,3 +142,48 @@ AWS provides Managed Workflow for Apache Airflow to simplify the service deploym
 
 
 
+## Pyspark - Structured Streaming
+
+In Databricks, we can use `spark.readStream` API for reading streaming data. 
+
+```python
+spark.readStream.
+   .format('json')  # data source format e.g. kafka, parquet, csv
+   .option('option_name', 'option_value')  # Customisation, e.g. 'maxFilesPerTrigger', 1 OR kafka topic when using Kafka as source
+   .schema(data_scheme)  # specifying schema speeds up reading
+   .load('source_path') # Specify the path on dbfs, url or directory
+```
+
+### Defining Schema for Structured Streaming
+1. Import necessary types from `pyspark.sql` 
+   ```python
+   from pyspark.sql.types import StructType, StructField, StringType, IntegerType, TimestampType
+   ```
+2. Define the Schema using `StructType`. E.g.
+   ```python
+   StructType([
+      StructField('field-1', IntegerType(), nullable=True)
+      StructField('field-2', StringType(), nullable=True)
+      StructField('field-3', TimestampType(), nullable=True)
+   ])
+   ```
+
+
+### Example stream with example data on Databricks
+
+```sh
+%fs ls /databricks-datasets/structured-streaming/events
+```
+
+```python
+data_path = r'/databricks-datasets/structured-streaming/events/'
+
+data_schema = StructType([
+   StructField("time", TimestampType(), True),
+   StructField("action", StringType(), True)
+])
+
+streamed_data = spark.readStream\
+    .format('json').schema(data_schema)\
+    .option('maxFilesPerTrigger', 1).load(data_path)
+```
