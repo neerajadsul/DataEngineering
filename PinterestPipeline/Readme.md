@@ -187,3 +187,10 @@ streamed_data = spark.readStream\
     .format('json').schema(data_schema)\
     .option('maxFilesPerTrigger', 1).load(data_path)
 ```
+
+## Modularization of code in Databricks
+
+https://docs.databricks.com/en/notebooks/notebook-workflows.html
+
+**Only Available in Databricks Runtime (DBR) 11.2+**
+https://docs.databricks.com/en/notebooks/share-code.html
