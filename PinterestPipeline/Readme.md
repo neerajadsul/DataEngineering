@@ -17,6 +17,12 @@ Following figure shows a high-level overview of the pipeline:
 | `user_data` | `['ind', 'first_name', 'last_name', 'age', 'date_joined']`|
 
 
+## Results of Analytics Queries
+I built Databricks dashboard to present to stakeholders for the analytics queries.
+The results to date can be viewed here: 
+[Analytics Dashboard](_docs/Analytics%20Dashboard%20-%200a1d8948160f_PinterestData.html)
+
+
 ## Configuration
 ### SSH Login to EC2 Instance
 1. Save identity file `*.pem` locally using secret for SSH connection in Parameter Store in AWS Account.
