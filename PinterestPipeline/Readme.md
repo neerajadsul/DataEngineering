@@ -169,12 +169,15 @@ spark.readStream.
    ```
 
 
-### Example stream with example data on Databricks
+### Example Stream Processing using example data
 
+#### Stream Source
 ```sh
 %fs ls /databricks-datasets/structured-streaming/events
 ```
 
+#### Define Schema for Structured Streaming
+**NOTE: Kinesis stream currently does not support predefined schema.**
 ```python
 data_path = r'/databricks-datasets/structured-streaming/events/'
 
@@ -182,12 +185,25 @@ data_schema = StructType([
    StructField("time", TimestampType(), True),
    StructField("action", StringType(), True)
 ])
+```
 
+#### Reading the Structured Data Stream
+
+```python
 streamed_data = spark.readStream\
     .format('json').schema(data_schema)\
     .option('maxFilesPerTrigger', 1).load(data_path)
 ```
 
+#### Clean and Write Stream to Delta Table
+
+```python
+clean_stream = perform_cleaning(streamed_data)
+
+clean_stream.writeStream\
+   .type('delta')
+   .tablename('pinterest_posts')
+```
 ## Modularization of code in Databricks
 
 https://docs.databricks.com/en/notebooks/notebook-workflows.html
