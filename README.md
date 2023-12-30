@@ -11,10 +11,13 @@ for business insights, experiments and formulating evidence based strategy.
 
 <img src="DataCentralisationProject/_docs/data_processing_pipeline.png" width="320" style="text-align=center;">
 
+3. [Pinterest Pipeline Project](./PinterestPipeline/)
+Pinterest performsn daily experiments on historical and daily acquired data to create more value for the customers. Goal of this project is to replicate the workflow using AWS Cloud infrastrcture.
+
+<img src="PinterestPipeline/_docs/pinterest_pipeline.png" width="320" style="text-align=center;">
 
 ### Practicals
 1. [Advanced SQL](./AdvancedSQL/)
 Complex queries to examine cross-relations, analysing data and performing calculations.
 2. [Amazon Web Services AWS](./Aws/)
 Creating and managing AWS EC2 instances, S3 Bucket and RDS database for applications.
-
