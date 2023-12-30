@@ -20,7 +20,7 @@ Following figure shows a high-level overview of the pipeline:
 ## Results of Analytics Queries
 I built Databricks dashboard to present to stakeholders for the analytics queries.
 The results to date can be viewed here: 
-[Analytics Dashboard](_docs/Analytics%20Dashboard%20-%200a1d8948160f_PinterestData.html)
+[Analytics Dashboard](./_docs/AnalyticsDashboard-0a1d8948160f_PinterestData.html)
 
 
 ## Configuration
