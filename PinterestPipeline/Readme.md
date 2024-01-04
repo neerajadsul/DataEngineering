@@ -22,6 +22,9 @@ I built Databricks dashboard to present to stakeholders for the analytics querie
 The results to date can be viewed here: 
 [Analytics Dashboard](./_docs/AnalyticsDashboard-0a1d8948160f_PinterestData.html)
 
+If you can't see the interactive HTML, please see the snapshot of the analytics dashboard here:
+<img src="_docs/Analytics_Pinterest_BatchProcessing.png" height=300>
+
 
 ## Configuration
 ### SSH Login to EC2 Instance
@@ -216,3 +219,18 @@ https://docs.databricks.com/en/notebooks/notebook-workflows.html
 
 **Only Available in Databricks Runtime (DBR) 11.2+**
 https://docs.databricks.com/en/notebooks/share-code.html
+
+## AWS Kinesis Structured Streaming
+
+We setup three streams in Kinesis for the three topics `pin`, `geo` and `user` as shown below in the AWS Kinesis Console. 
+
+![Data Streams in AWS Kinesis Console](_docs/AWS_Kinesis_DataStreams.png)
+
+
+These streams are publicly accessble via an AWS API Gateway. The http methods `POST`, `PUT` and `DELETE` are used for
+streaming data in JSON format throught the data pathway.
+An overview of API tree is below:
+
+
+<img src="_docs/AWS%20API%20Gateway%20for%20Data%20Streaming.png" width=200/>
+
