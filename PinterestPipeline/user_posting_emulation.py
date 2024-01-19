@@ -57,7 +57,7 @@ def send_data_kafka_processing(data, topic):
     return response
 
 
-def process_payload_json(data):
+def process_payload_kafka_json(data):
 
     if 'timestamp' in data:
         data['timestamp'] = data['timestamp'].isoformat()
@@ -75,12 +75,55 @@ def process_payload_json(data):
     return payload
 
 
-def run_infinite_post_data_loop(num_posts=-1):
+def send_data_kinesis_stream(data, topic):
+    INVOKE_ENDPOINT = 'https://y62ln2mwxb.execute-api.us-east-1.amazonaws.com/test/'
+    STREAM_PATH = f'streams/streaming-0a1d8948160f-{topic}/record'
+
+    headers = {'Content-Type': 'application/json'}
+
+    response = requests.put(
+        url=INVOKE_ENDPOINT + STREAM_PATH,
+        data=data,
+        headers=headers,
+    )
+
+    return response
+
+
+def process_payload_kinesis_json(data: dict, topic):
+
+    if 'timestamp' in data:
+        data['timestamp'] = data['timestamp'].isoformat()
+
+    if 'date_joined' in data:
+        data['date_joined'] = data['date_joined'].isoformat()
+
+    payload = json.dumps({
+        "StreamName": f"streaming-0a1d8948160f-{topic}",
+        "Data": data,
+        "PartitionKey": "partition-1"
+    })
+    return payload
+
+
+from enum import Enum
+
+
+class DataFormat(Enum):
+    """Choose between batch, streaming or both."""
+    BATCH = 'kafka'
+    STREAM = 'kinesis'
+    BOTH = 'both'
+    
+
+
+def run_infinite_post_data_loop(num_posts: int, format: DataFormat) -> None:
     """_summary_
 
     :param num_posts: _description_, defaults to -1
     """
     new_connector = AWSDBConnector()
+    N = num_posts
     while num_posts > 0:
         sleep(random.randrange(0, 2))
         random_row = random.randint(0, 11000)
@@ -107,9 +150,17 @@ def run_infinite_post_data_loop(num_posts=-1):
 
             for topic, result in zip(['pin', 'geo', 'user'], [pin_result, geo_result, user_result]):
                 # pprint(result)
-                data = process_payload_json(result)
-                pprint(data)
-                response = send_data_kafka_processing(data, topic)
+                if format == DataFormat.BATCH or format == DataFormat.BOTH:
+                    data = process_payload_kafka_json(result)
+                    response = send_data_kafka_processing(data, topic)
+                elif format == DataFormat.STREAM or format == DataFormat.BOTH:
+                    data = process_payload_kinesis_json(result, topic)
+                    response = send_data_kinesis_stream(data, topic)
+                else:
+                    raise ValueError('Invalid format specified, check --help.')
+
+                logger.debug(response.status_code,'\n', data)
+                print(f'{topic} Sent {N - num_posts + 1} of {N}')
 
             num_posts -= 1
             if response.status_code == 200:
@@ -120,18 +171,17 @@ def run_infinite_post_data_loop(num_posts=-1):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser('Retrieve given number of posts')
-    parser.add_argument('-n', default=10000, type=int, help='number of posts, default 10000')
-    parser.add_argument('-log', default='d', type=str, help='Logging level: d, i, e')
+    parser.add_argument('-n', default=1, type=int, help='number of posts, default 1')
+    parser.add_argument('-f', default=DataFormat.BOTH, type=str,
+                        choices= tuple(x.value for x in DataFormat),
+                        help="Data format 'kafka', 'kinesis' or 'both'")
+    parser.add_argument('-log', default='d', type=str, choices=('d', 'i', 'e'), help='Logging level: d, i, e')
 
     args = parser.parse_args()
-
-    if len(sys.argv) < 2:
-        args.n = 1
-        args.log = 'd'
 
     log_levels = {'d': logging.DEBUG, 'i': logging.INFO, 'e': logging.ERROR}
 
     logger.setLevel(log_levels[args.log])
-    print(args.n, args.log)
+    print(f'Sending {args.n} posts data to {args.f} endpoints, logging {args.log}')
 
-    run_infinite_post_data_loop(num_posts=args.n)
+    run_infinite_post_data_loop(num_posts=args.n, format=DataFormat(args.f))
