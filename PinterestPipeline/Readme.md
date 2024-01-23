@@ -1,4 +1,34 @@
 # Pinterest Data Pipeline
+
+- [Pinterest Data Pipeline](#pinterest-data-pipeline)
+  - [Emulating User Posts](#emulating-user-posts)
+  - [Results of Analytics Queries](#results-of-analytics-queries)
+  - [Configuration](#configuration)
+    - [SSH Login to EC2 Instance](#ssh-login-to-ec2-instance)
+    - [Kafka EC2 Instance](#kafka-ec2-instance)
+    - [Connect Kafka to MSK Cluster](#connect-kafka-to-msk-cluster)
+    - [Kafka REST Proxy Integration for API](#kafka-rest-proxy-integration-for-api)
+    - [Databricks Setup with S3](#databricks-setup-with-s3)
+  - [Databricks Apache Spark Reporting Pipeline](#databricks-apache-spark-reporting-pipeline)
+    - [Data Cleaning](#data-cleaning)
+      - [Cleaning `df_pin`](#cleaning-df_pin)
+      - [Cleaning `df_geo`](#cleaning-df_geo)
+      - [Cleaning `df_user`](#cleaning-df_user)
+    - [Analytics Queries](#analytics-queries)
+    - [Analysis Dashboard](#analysis-dashboard)
+  - [Apache Airflow](#apache-airflow)
+    - [AWS MWAA](#aws-mwaa)
+  - [Pyspark - Structured Streaming](#pyspark---structured-streaming)
+    - [Defining Schema for Structured Streaming](#defining-schema-for-structured-streaming)
+    - [Example Stream Processing using example data](#example-stream-processing-using-example-data)
+      - [Stream Source](#stream-source)
+      - [Define Schema for Structured Streaming](#define-schema-for-structured-streaming)
+      - [Reading the Structured Data Stream](#reading-the-structured-data-stream)
+      - [Clean and Write Stream to Delta Table](#clean-and-write-stream-to-delta-table)
+  - [Modularization of code in Databricks](#modularization-of-code-in-databricks)
+  - [AWS Kinesis Structured Streaming](#aws-kinesis-structured-streaming)
+
+
 Pinterest performsn daily experiments on historical and daily acquired data to create more value for the customers. Goal of this project is to replicate the workflow using AWS Cloud infrastrcture.
 
 Following figure shows a high-level overview of the pipeline:
