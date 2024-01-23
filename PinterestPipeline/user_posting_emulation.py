@@ -2,42 +2,21 @@ import requests
 from time import sleep
 import random
 import json
-import sqlalchemy
-from sqlalchemy import text
-from pprint import pprint
 import argparse
-import yaml
 import logging
-from pathlib import Path
-import sys
 
+from utils.database import AWSDBConnector
+from utils.payloads import KafkaRestData, KinesisPackage
+from utils.payloads import PinterestPayload
 
 # random.seed(100)
 logger = logging.getLogger(__name__)
-root_dir = Path(__file__).resolve().parents[0]
 
 
 def print_keys(d):
     for k in d.keys():
         print(f'`{k}`')
     print()
-
-
-class AWSDBConnector:
-    def __init__(self):
-        with open(root_dir / 'db_creds_pinterest.yaml') as f:
-            creds = yaml.safe_load(f)
-        self.HOST = creds['HOST']
-        self.USER = creds['USER']
-        self.PASSWORD = creds['PASSWORD']
-        self.DATABASE = creds['DATABASE']
-        self.PORT = creds['PORT']
-
-    def create_db_connector(self):
-        engine = sqlalchemy.create_engine(
-            f'mysql+pymysql://{self.USER}:{self.PASSWORD}@{self.HOST}:{self.PORT}/{self.DATABASE}?charset=utf8mb4'
-        )
-        return engine
 
 
 def send_data_kafka_processing(data, topic):
@@ -106,6 +85,8 @@ def process_payload_kinesis_json(data: dict, topic):
     return payload
 
 
+
+
 from enum import Enum
 
 
@@ -122,51 +103,29 @@ def run_infinite_post_data_loop(num_posts: int, format: DataFormat) -> None:
 
     :param num_posts: _description_, defaults to -1
     """
-    new_connector = AWSDBConnector()
+    db_connector = AWSDBConnector()
     N = num_posts
+
     while num_posts > 0:
         sleep(random.randrange(0, 2))
-        random_row = random.randint(0, 11000)
-        engine = new_connector.create_db_connector()
+        post_data =  db_connector.random_post()
+        for topic, result in zip(['pin', 'geo', 'user'], post_data):
+            # pprint(result)
+            if format == DataFormat.BATCH or format == DataFormat.BOTH:
+                data = process_payload_kafka_json(result)
+                response = send_data_kafka_processing(data, topic)
+            if format == DataFormat.STREAM or format == DataFormat.BOTH:
+                data = process_payload_kinesis_json(result, topic)
+                response = send_data_kinesis_stream(data, topic)
 
-        with engine.connect() as connection:
-            pin_string = text(f'SELECT * FROM pinterest_data LIMIT {random_row}, 1')
-            pin_selected_row = connection.execute(pin_string)
+            logger.debug(response.status_code,'\n', data)
+            print(f'{topic} Sent {N - num_posts + 1} of {N}')
 
-            for row in pin_selected_row:
-                pin_result = dict(row._mapping)
-
-            geo_string = text(f'SELECT * FROM geolocation_data LIMIT {random_row}, 1')
-            geo_selected_row = connection.execute(geo_string)
-
-            for row in geo_selected_row:
-                geo_result = dict(row._mapping)
-
-            user_string = text(f'SELECT * FROM user_data LIMIT {random_row}, 1')
-            user_selected_row = connection.execute(user_string)
-
-            for row in user_selected_row:
-                user_result = dict(row._mapping)
-
-            for topic, result in zip(['pin', 'geo', 'user'], [pin_result, geo_result, user_result]):
-                # pprint(result)
-                if format == DataFormat.BATCH or format == DataFormat.BOTH:
-                    data = process_payload_kafka_json(result)
-                    response = send_data_kafka_processing(data, topic)
-                elif format == DataFormat.STREAM or format == DataFormat.BOTH:
-                    data = process_payload_kinesis_json(result, topic)
-                    response = send_data_kinesis_stream(data, topic)
-                else:
-                    raise ValueError('Invalid format specified, check --help.')
-
-                logger.debug(response.status_code,'\n', data)
-                print(f'{topic} Sent {N - num_posts + 1} of {N}')
-
-            num_posts -= 1
-            if response.status_code == 200:
-                logger.info(response.content)
-            else:
-                logger.error(response.content)
+        num_posts -= 1
+        if response.status_code == 200:
+            logger.info(response.content)
+        else:
+            logger.error(response.content)
 
 
 if __name__ == '__main__':
