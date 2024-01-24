@@ -27,7 +27,7 @@ class AWSDBConnector:
         )
         return engine
 
-    def random_post(self):
+    def random_post(self) -> dict:
         """Returns a random post data containing
             - pin 
             - geolocation
@@ -54,4 +54,4 @@ class AWSDBConnector:
             for row in user_selected_row:
                 user_result = dict(row._mapping) 
 
-        return pin_result, geo_result, user_result
+        return {'pin': pin_result, 'geo': geo_result, 'user': user_result}
