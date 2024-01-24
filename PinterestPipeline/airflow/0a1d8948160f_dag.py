@@ -9,7 +9,7 @@ pr = 'liamg'[::-1]
 ud = 'f0618498d1a0'[::-1]
 
 notebook_task = {
-    'notebook_path': f"/Users/{fn}.{sn}@{pr}.com/{ud}_PinterestDataPipeline"
+    'notebook_path': f"/Users/{fn}.{sn}@{pr}.com/{ud}_PinterestDataPipeline_BatchProcessing"
 }
 
 notebook_params = {
